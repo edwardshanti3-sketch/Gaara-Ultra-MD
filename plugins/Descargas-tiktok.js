@@ -18,7 +18,7 @@ const handler = async (m, { conn, text, args, usedPrefix, command }) => {
     let { nickname } = data.result.author;
 
     let caption = `
-╭━━━〔 ⚡️ *GAARA-ULTRA-DESCARGA* ⚡️ 〕━━━⬣
+╭━━━〔 ⚡️ *Isagi-Bot-DESCARGA* ⚡️ 〕━━━⬣
 ┃ ❒ *Autor:* ${nickname}
 ┃ ❒ *Título:* ${title}
 ┃ ❒ *Duración:* ${duration}
