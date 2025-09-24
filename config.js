@@ -16,13 +16,13 @@ global.botNumber = '' //Ejemplo: 573218138672
 
 global.owner = [
 // <-- Número @s.whatsapp.net -->
-  ['18493907272', 'Xzzys26 Creador', true],
+  ['18493907272', 'Isagi Creador', true],
   ['51956931649'],
   ['1920437612698@lid'],
 
 // <-- Número @lid -->
-  ['1920437612698', 'Xzzys26', true],
-  ['258892692984006', 'DevAlexJs', true], 
+  ['1920437612698', 'Iaagi', true],
+  ['258892692984006', 'Isagi', true], 
   ['58566677377081', 'legna', true],
   ['50499605089']
 ];
@@ -40,18 +40,18 @@ global.baileys = 'V 6.7.17'
 global.languaje = 'Español'
 global.vs = '2.13.2'
 global.vsJB = '5.0'
-global.nameqr = 'Gaara-Ultra-MD' 
-global.namebot = 'Gaara-Ultra-MD'
-global.vegetasessions = 'GaaraSessions'
+global.nameqr = 'Isagi-bot-MD' 
+global.namebot = 'Isagi-bot-MD'
+global.vegetasessions = 'IsagiSessions'
 global.jadi = 'JadiBots' 
 global.vegetaJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = `Xzzys26 Gaara-Ultra-MD`
-global.botname = 'Isagi 𝗨𝗟𝗧𝗥𝗔-𝗠𝗗'
+global.packname = `Isagi Isagi-Ultra-MD`
+global.botname = 'Isagi bot-MD'
 global.dev = '𝙿𝙾𝚆𝙴𝚁𝙳 𝙱𝚈 𝚇𝚉𝚉𝚂𝚈26'
-global.textbot = '𝐁𝐲 𝐗𝐳𝐳𝐲𝐬26 𝐆𝐚𝐚𝐫𝐚 𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
+global.textbot = '𝐁𝐲 Isagi Isagibot-MD'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
@@ -65,8 +65,8 @@ global.catalogo = 'https://files.catbox.moe/j0z1kz.jpg'
 
 global.gp1 = 'https://chat.whatsapp.com/HaKf6ezcwdbGzmH782eBal?mode=r_c'
 global.comunidad1 = 'https://chat.whatsapp.com/I0dMp2fEle7L6RaWBmwlAa'
-global.channel = 'https://whatsapp.com/channel/0029Vb5yFNP72WU14BQqel1V'
-global.channel2 = 'https://whatsapp.com/channel/0029Vb5yFNP72WU14BQqel1V'
+global.channel = 'https://whatsapp.com/channel/0029VbB2icM8PgsBAxZu7g0X'
+global.channel2 = 'https://whatsapp.com/channel/0029VbB2icM8PgsBAxZu7g0X'
 global.md = 'https://github.com/xzzys26/Gaara-Ultra-MD.git'
 global.correo = 'erenxz01@gmail.com'
 
