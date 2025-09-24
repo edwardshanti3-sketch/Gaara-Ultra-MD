@@ -137,7 +137,7 @@ ${comandos.map(menu => menu.help.map(help =>
           }
         }
       }
-    }, { userJid: m.sender, quoted: m })
+    }, { userJid: m.sender, quoted: estilo })
 
     await conn.relayMessage(m.chat, msg.message, { messageId: msg.key.id })
 
