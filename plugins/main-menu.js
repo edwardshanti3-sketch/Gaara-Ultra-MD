@@ -149,7 +149,7 @@ ${comandos.map(menu => menu.help.map(help =>
 
 handler.help = ['menu','m']
 handler.tags = ['main']
-handler.command = ['menu', 'allmenu', 'menú']
+handler.command = ['menu', 'allmenu', 'menú','m']
 handler.register = true
 
 export default handler
