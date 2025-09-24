@@ -60,8 +60,8 @@ let handler = async (m, { conn, usedPrefix }) => {
   
   let estadoMsg = `
 ╭━━━〔 ⚡ *SISTEMA DE ESTADO* ⚡ 〕━━━⬣
-┃ 🌪️ *Bot:* ${botname}
-┃ 👑 *Creador:* xzzys26 
+┃ 🌪️ *Bot:* ${Isafog-ultra}
+┃ 👑 *Creadores:*Isagi y Fog 
 ┃ ⚡ *Prefijo:* [ ${usedPrefix} ]
 ┃ 📦 *Versión:* ${vs}
 ╰━━━━━━━━━━━━━━━━━━━━━━⬣
