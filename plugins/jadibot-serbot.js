@@ -69,10 +69,10 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     return m.reply(`El Comando *${command}* está desactivado temporalmente.`)
   }
 
-  let time = global.db.data.users[m.sender].Subs + 120000
-  if (new Date() - global.db.data.users[m.sender].Subs < 120000) {
-    return conn.reply(m.chat, `⏳ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
-  }
+  //let time = global.db.data.users[m.sender].Subs + 120000
+  //if (new Date() - global.db.data.users[m.sender].Subs < 120000) {
+    //return conn.reply(m.chat, `⏳ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
+  //}
 
   const subBots = [...new Set(
     global.conns.filter(c =>
