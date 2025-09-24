@@ -8,10 +8,10 @@ async function handler(m, { conn, usedPrefix }) {
 
     let messageText = `
 🤖 *Gaara-Ultra-MD*
-👤 *Creador:* xzzys26
-📱 *Número:* +18097769423
-🌐 *Dashboard:* https://dash.deluxehost.cl
-💻 *GitHub:* https://github.com/xzzys26
+👤 *Creador:* Edward
+📱 *Número:* +504 9960-5089
+🌐 *Dashboard:* https://dash.aeabic.click
+💻 *GitHub:* https://github.com
 `
 
     await conn.sendMessage(m.chat, {
