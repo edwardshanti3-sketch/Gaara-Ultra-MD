@@ -1,4 +1,4 @@
-// créditos by xzzys26 Para Gaara-Ultra-MD 
+// créditos by isagi y fog Para Isafog-Ultra-MD 
 
 async function handler(m, { conn, usedPrefix }) {
   try {
@@ -7,9 +7,9 @@ async function handler(m, { conn, usedPrefix }) {
     const imageUrl = 'https://files.catbox.moe/inqghn.jpg'
 
     let messageText = `
-🤖 *Gaara-Ultra-MD*
-👤 *Creador:* xzzys26
-📱 *Número:* +18097769423
+🤖 *Isagog-Ultra-MD*
+👤 *Creador:* Isagi
+📱 *Número:* +50499605089
 🌐 *Dashboard:* https://dash.deluxehost.cl
 💻 *GitHub:* https://github.com/xzzys26
 `
@@ -36,7 +36,7 @@ async function handler(m, { conn, usedPrefix }) {
   } catch (error) {
     console.error('Error:', error)
     await conn.sendMessage(m.chat, { 
-      text: '🤖 *Gaara-Ultra-MD*\n👤 *Creador:* xzzys26\n📱 *Número:* +18097769423\n🌐 *Dashboard:* https://dash.deluxehost.cl\n💻 *GitHub:* https://github.com/xzzys26\n\n*⚡ Servicios Privado Con Alta Calidad*'
+      text: '🤖 *Isafog-Ultra-MD*\n👤 *Creador:* Isafog\n📱 *Número:* +50499605089\n🌐 *Dashboard:* https://dash.deluxehost.cl\n💻 *GitHub:* https://github.com/xzzys26\n\n*⚡ Servicios Privado Con Alta Calidad*'
     }, { quoted: m })
   }
 }
