@@ -107,11 +107,10 @@ ${comandos.map(menu => menu.help.map(help =>
     }
 
     menuText += `
-> 👑 Powered by ${creador} 🥷🏽
+> 👑 Powered by GP 🥷🏽
 `
 
     await m.react('⚡️')
-    await m.react('✅️')
 
     let vidBuffer = await (await fetch('https://files.catbox.moe/z0ygkv.mp4')).buffer() // cambia la URL por tu video corto
     let media = await prepareWAMessageMedia(
@@ -130,7 +129,7 @@ ${comandos.map(menu => menu.help.map(help =>
               isForwarded: true,
               forwardedNewsletterMessageInfo: {
                 newsletterJid: '120363144038483540@newsletter',
-                newsletterName: '𝑮𝑨𝑨𝑹𝑨 𝑼𝑳𝑻𝑹𝑨-𝑴𝑫 𝑭𝑰𝑿 ⚡',
+                newsletterName: 'Isagui-Bot-MD ⚡',
                 serverMessageId: 100
               }
             }
