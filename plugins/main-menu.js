@@ -1,4 +1,4 @@
-// créditos y creador de código BrayanOFC Y Modificado Por xzzys26
+// créditos y creador de código Isagi Y Modificado Por Isagi
 import { xpRange } from '../lib/levelling.js'
 import ws from 'ws'
 import { generateWAMessageFromContent, prepareWAMessageMedia } from '@whiskeysockets/baileys'
