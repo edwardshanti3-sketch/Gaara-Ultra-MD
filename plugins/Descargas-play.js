@@ -24,7 +24,7 @@ messageText += `> ❍ Url: ${video.url}\n`;
         await conn.sendMessage(m.chat, {
             image: thumbnail,
             caption: messageText,
-            footer: `𝙋𝙇𝘼𝙔 𝙂𝘼𝘼𝙍𝘼-𝙐𝙇𝙏𝙍𝘼-𝙈𝘿⚡️`,
+            footer: `𝙋𝙇𝘼𝙔 Isagi-Bot-MD⚡️`,
             contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 999,
