@@ -4,7 +4,7 @@ import ws from 'ws'
 import { generateWAMessageFromContent, prepareWAMessageMedia } from '@whiskeysockets/baileys'
 import fetch from 'node-fetch'
 
-const botname = global.botname || '🌪️ 𝙂𝘼𝘼𝙍𝘼-𝙐𝙇𝙏𝙍𝘼-𝙈𝘿 🌪️'
+const botname = global.botname || '🌪️ Isagi-bot-MD 🌪️'
 const creador = 'https://xzys-ultra.vercel.app'
 const versionBot = '2.4.1' // cámbiala si tienes otra
 
@@ -81,7 +81,7 @@ let handler = async (m, { conn, usedPrefix: _p }) => {
 
     // Bloque inicial
     let menuText = `
-╭━━━〔 ⚡️ *GAARA-ULTRA-MENU* ⚡️ 〕━━━⬣
+╭━━━〔 ⚡️ *Isagi-Bot-MENU* ⚡️ 〕━━━⬣
 ┃ ❒ *Nombre*: *${botname}*
 ┃ ❒ *Creador*: *${creador}*
 ┃ ❒ *Estado*: *${modo}*
