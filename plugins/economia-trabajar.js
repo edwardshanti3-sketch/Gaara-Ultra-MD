@@ -8,7 +8,7 @@ var handler = async (m, { conn }) => {
         return conn.reply(m.chat, `🌟 Debes esperar ${msToTime(time - new Date())} antes de volver a trabajar.`, m);
     }
 
-    let monedas = 200;
+    let monedas = 50000;
 
     user.coin += monedas;
     user.lastwork = Date.now();
@@ -23,6 +23,7 @@ var handler = async (m, { conn }) => {
         "cantante 🎤",
         "mecánico 🔧", 
         "policia 🚔"
+        "owner 🧑‍💻"
     ];
     let trabajo = trabajos[Math.floor(Math.random() * trabajos.length)];
 
