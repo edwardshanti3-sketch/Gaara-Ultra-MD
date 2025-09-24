@@ -47,10 +47,10 @@ global.vegetaJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = `Xzzys26 Gaara-Ultra-MD`
-global.botname = '𝗚𝗔𝗔𝗥𝗔 𝗨𝗟𝗧𝗥𝗔-𝗠𝗗'
+global.packname = `IsagiyFog Isagig-Ultra-MD`
+global.botname = 'Isagifog ultra-md'
 global.dev = '𝙿𝙾𝚆𝙴𝚁𝙳 𝙱𝚈 𝚇𝚉𝚉𝚂𝚈26'
-global.textbot = '𝐁𝐲 𝐗𝐳𝐳𝐲𝐬26 𝐆𝐚𝐚𝐫𝐚 𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
+global.textbot = '𝐁𝐲 IsagiyFog Isafog Ultra-MD'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
