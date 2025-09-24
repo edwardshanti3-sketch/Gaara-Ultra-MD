@@ -1,4 +1,4 @@
-// créditos by Edward Para Isagi-Ultra-MD 
+// créditos by Isagi Para Isagi-bot-MD 
 
 async function handler(m, { conn, usedPrefix }) {
   try {
@@ -7,8 +7,8 @@ async function handler(m, { conn, usedPrefix }) {
     const imageUrl = 'https://files.catbox.moe/inqghn.jpg'
 
     let messageText = `
-🤖 *Isagi-Ultra-MD*
-👤 *Creador:* Edward
+🤖 *Isagi-bot-MD*
+👤 *Creador:* Isagi
 📱 *Número:* +504 9960-5089
 🌐 *Dashboard:* https://dash.aeabic.click
 💻 *GitHub:* https://github.com
@@ -36,7 +36,7 @@ async function handler(m, { conn, usedPrefix }) {
   } catch (error) {
     console.error('Error:', error)
     await conn.sendMessage(m.chat, { 
-      text: '🤖 *Isagi-Ultra-MD*\n👤 *Creador:* xzzys26\n📱 *Número:* +18097769423\n🌐 *Dashboard:* https://dash.deluxehost.cl\n💻 *GitHub:* https://github.com/xzzys26\n\n*⚡ Servicios Privado Con Alta Calidad*'
+      text: '🤖 *Isagi-bot-MD*\n👤 *Creador:* Isagi\n📱 *Número:* +50499605089\n🌐 *Dashboard:* https://dash.deluxehost.cl\n💻 *GitHub:* https://github.com/xzzys26\n\n*⚡ Servicios Privado Con Alta Calidad*'
     }, { quoted: m })
   }
 }
