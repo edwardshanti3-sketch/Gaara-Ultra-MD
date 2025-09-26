@@ -1,4 +1,4 @@
-const baseCoinReward = 20000;
+const baseCoinReward = 200000;
 
 var handler = async (m, { conn }) => {
 
