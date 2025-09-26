@@ -1,7 +1,7 @@
 var handler = async (m, { conn }) => {
     let user = global.db.data.users[m.sender]
 
-    // ⏰ Cooldown (10 minutos)
+    // ⏰ Cooldown (3 minutos)
     let cooldown = 10 * 60 * 1000
     let time = user.lastcrime + cooldown
 
