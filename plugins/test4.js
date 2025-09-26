@@ -6,7 +6,7 @@ let handler = async (m, { conn, args }) => {
     await m.react?.('✨').catch(() => {})
 
     // Envía texto
-    await conn.sendMessage(m.chat, { text: 'Texto Holaaas' }, { quoted: m })
+    await conn.sendMessage(m.chat, { text: 'Holaaas' }, { quoted: m })
   } catch (err) {
     console.error('Error + error exacto', err)
     // Mensaje si algo falla 
