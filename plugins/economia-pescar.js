@@ -1,7 +1,7 @@
 var handler = async (m, { conn }) => {
     let user = global.db.data.users[m.sender];
 
-    let cooldown = 10 * 60 * 1000;
+    let cooldown = 3 * 60 * 1000;
     let time = user.lastfish + cooldown;
 
     if (new Date() - user.lastfish < cooldown) {
