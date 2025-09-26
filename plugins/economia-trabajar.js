@@ -1,14 +1,14 @@
 var handler = async (m, { conn }) => {
     let user = global.db.data.users[m.sender];
 
-    let cooldown = 7 * 60 * 1000;
+    let cooldown = 3 * 60 * 1000;
     let time = user.lastwork + cooldown;
 
     if (new Date() - user.lastwork < cooldown) {
         return conn.reply(m.chat, `🌟 Debes esperar ${msToTime(time - new Date())} antes de volver a trabajar.`, m);
     }
 
-    let monedas = 50000;
+    let monedas = 5000;
 
     user.coin += monedas;
     user.lastwork = Date.now();
