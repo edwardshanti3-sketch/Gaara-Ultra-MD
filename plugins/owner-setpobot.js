@@ -4,14 +4,19 @@ const { downloadContentFromMessage } = pkg
 
 let handler = async (m, { conn }) => {
   try {
-    // 🔹 Reacción de cargando
     await m.react?.('⏳')
 
-    // Tomar imagen (quoted o propia)
-    const targetMsg = m.quoted?.message ? m.quoted : m
-    const imageMessage = targetMsg.message?.imageMessage
+    // 🔹 Usar mensaje citado si existe, si no el actual
+    const targetMsg = m.quoted ? m.quoted : m
+
+    // 🔹 Intentar capturar imageMessage
+    const imageMessage =
+      targetMsg?.message?.imageMessage ||           // si es imagen normal
+      targetMsg?.msg?.message?.imageMessage ||      // a veces en bails va en msg
+      targetMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage // casos raros
+
     if (!imageMessage) {
-      return m.reply('❌ Responde a una *imagen* con el comando `.setppbot`.')
+      return m.reply('❌ Responde o envía una *imagen* y usa `.setppbot`.')
     }
 
     // 🔹 Descargar la imagen
@@ -19,10 +24,10 @@ let handler = async (m, { conn }) => {
     let buffer = Buffer.from([])
     for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk])
 
-    // 🔹 Obtener el JID del bot
+    // 🔹 JID del bot
     const botJid = (conn.user && (conn.user.id || conn.user.jid || conn.user)) || conn.user
 
-    // 🔹 Subir foto de perfil (usa tu generateProfilePicture ya modificado)
+    // 🔹 Subir foto
     if (typeof conn.updateProfilePicture === 'function') {
       await conn.updateProfilePicture(botJid, buffer)
     } else if (typeof conn.setProfilePicture === 'function') {
@@ -30,11 +35,11 @@ let handler = async (m, { conn }) => {
     } else if (typeof conn.profilePictureUpdate === 'function') {
       await conn.profilePictureUpdate(botJid, buffer)
     } else {
-      throw new Error('Tu versión de bails no expone updateProfilePicture')
+      throw new Error('Método de actualización no encontrado en bails.')
     }
 
     await m.react?.('✅')
-    await m.reply('✅ Foto de perfil del bot actualizada correctamente (se mantiene 16:9 o 9:16).')
+    await m.reply('✅ Foto de perfil del bot actualizada (respetando proporción).')
   } catch (e) {
     console.error(e)
     await m.react?.('❌')
