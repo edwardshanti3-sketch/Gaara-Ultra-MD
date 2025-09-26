@@ -1,30 +1,34 @@
 import yts from "yt-search";
-import { default as Dylux } from "api-dylux";
+import fetch from "node-fetch";
 
-const dylux = new Dylux(); // inicializa la API de Dylux
+const ADONIX_API = "https://api-adonix.ultraplus.click/download/ytmp3?apikey=AdonixKeykh0cie2874";
 
 const handler = async (m, { conn, text, command }) => {
   try {
-    if (!text?.trim()) return conn.reply(m.chat, "Ingresa el nombre del video a descargar.", m);
+    if (!text?.trim()) 
+      return conn.reply(m.chat, "Ingresa el nombre del video a descargar.", m);
 
     await conn.sendMessage(m.chat, { react: { text: "🕑", key: m.key } });
 
     const search = await yts(text);
-    if (!search.all || !search.all.length) return m.reply("No se encontraron resultados para tu búsqueda.");
+    if (!search.all || !search.all.length)
+      return m.reply("No se encontraron resultados para tu búsqueda.");
 
     const videoInfo = search.all[0];
     const { title, url } = videoInfo;
 
-    // Obtenemos la URL de descarga con api-dylux
+    // Obtenemos la URL de descarga desde Adonix
     let downloadUrl = null;
     try {
-      const res = await dylux.ytmp3(url); // método de api-dylux
-      downloadUrl = res?.result?.download?.url || null;
+      const res = await fetch(`${ADONIX_API}&url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      downloadUrl = data?.result?.download?.url || null;
     } catch {
       downloadUrl = null;
     }
 
-    if (!downloadUrl) return m.reply("No se pudo descargar el audio.");
+    if (!downloadUrl) 
+      return m.reply("No se pudo descargar el audio.");
 
     const fileName = `${title.replace(/[^a-zA-Z0-9 ]/g, "").trim().replace(/ +/g, "_")}.mp3`;
     await conn.sendMessage(
