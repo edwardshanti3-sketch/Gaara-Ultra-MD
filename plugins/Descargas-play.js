@@ -1,14 +1,14 @@
 import yts from 'yt-search';
 import fetch from 'node-fetch';
 import { prepareWAMessageMedia, generateWAMessageFromContent } from '@whiskeysockets/baileys';
+import { ogmp3 } from './ogmp3.js'; // importa tu objeto con APIs
 
-const handler = async (m, { conn, args, usedPrefix }) => {
+const handler = async (m, { conn, args, usedPrefix, command }) => {
     if (!args[0]) return conn.reply(m.chat, `⚡️ Ingresa un texto para buscar en YouTube.\n> *Ejemplo:* ${usedPrefix + command} Shakira`, m);
 
     await m.react('🕓');
     try {
         let searchResults = await searchVideos(args.join(" "));
-
         if (!searchResults.length) throw new Error('No se encontraron resultados.');
 
         let video = searchResults[0];
@@ -17,9 +17,13 @@ const handler = async (m, { conn, args, usedPrefix }) => {
         let messageText = `*Youtube - Download*\n\n`;
         messageText += `${video.titulo}\n\n`;
         messageText += `> ❍ Duración: ${video.duracion || 'No disponible'}\n`;
-messageText += `> ❍ Autor: ${video.canal || 'Desconocido'}\n`;
-messageText += `> ❍ Publicado: ${convertTimeToSpanish(video.publicado)}\n`;
-messageText += `> ❍ Url: ${video.url}\n`;
+        messageText += `> ❍ Autor: ${video.canal || 'Desconocido'}\n`;
+        messageText += `> ❍ Publicado: ${convertTimeToSpanish(video.publicado)}\n`;
+        messageText += `> ❍ Url: ${video.url}\n`;
+
+        // Llamadas a la API de ogmp3
+        const mp3Data = await ogmp3.download(video.url, '320', 'audio');
+        const mp4Data = await ogmp3.download(video.url, '720', 'video');
 
         await conn.sendMessage(m.chat, {
             image: thumbnail,
@@ -32,12 +36,12 @@ messageText += `> ❍ Url: ${video.url}\n`;
             },
             buttons: [
                 {
-                    buttonId: `${usedPrefix}ytmp3 ${video.url}`,
+                    buttonId: `${usedPrefix}ytmp3 ${mp3Data?.result?.download || video.url}`,
                     buttonText: { displayText: '𝗮𝘂𝗱𝗶𝗼 🎶' },
                     type: 1,
                 },
                 {
-                    buttonId: `${usedPrefix}ytmp4 ${video.url}`,
+                    buttonId: `${usedPrefix}ytmp4 ${mp4Data?.result?.download || video.url}`,
                     buttonText: { displayText: '𝗩𝗶𝗱𝗲𝗼 🎬' },
                     type: 1,
                 }
@@ -50,7 +54,7 @@ messageText += `> ❍ Url: ${video.url}\n`;
     } catch (e) {
         console.error(e);
         await m.react('✖️');
-        conn.reply(m.chat, '*`Error al buscar el video.`*', m);
+        conn.reply(m.chat, '*`Error al buscar o descargar el video.`*', m);
     }
 };
 
