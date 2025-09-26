@@ -24,7 +24,7 @@ var handler = async (m, { conn }) => {
 handler.help = ['pescar'];
 handler.tags = ['rpg'];
 handler.command = ['pescar'];
-handler.group = true;
+//handler.group = true;
 
 export default handler;
 
