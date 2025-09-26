@@ -18,6 +18,6 @@ let handler = async (m, { conn }) => {
 handler.help = ['bal']
 handler.tags = ['rpg']
 handler.command = ['bal', 'balance', 'bank'] 
-handler.group = true 
+//handler.group = true 
 
 export default handler
