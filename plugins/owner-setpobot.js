@@ -1,4 +1,3 @@
-No da mejor usa esto y agrega import jimp o no se agrega lo q se necesita aunq no
 
 import pkg from '@whiskeysockets/baileys'
 const { downloadContentFromMessage } = pkg
