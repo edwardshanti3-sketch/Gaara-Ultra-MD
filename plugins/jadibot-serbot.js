@@ -110,13 +110,13 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   
 handler.help = ['qr', 'code']  
 handler.tags = ['serbot']  
-handler.command = ['qr', 'code']  
-  
+handler.command = ['qr', 'code', 'start']  
+
 export default handler  
-  
+
 export async function vegetaJadiBot(options) {  
   let { pathvegetaJadiBot, m, conn, args, usedPrefix, command } = options  
-  if (command === 'code') {  
+  if (command === 'code' || command === 'start') {  
     command = 'qr'  
     args.unshift('code')  
   }  
@@ -143,14 +143,14 @@ export async function vegetaJadiBot(options) {
     conn.reply(m.chat, `⚠️ Use correctamente el comando » ${usedPrefix + command}`, m)  
     return  
   }  
-  
+
   const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")  
   exec(comb.toString("utf-8"), async (err, stdout, stderr) => {  
     const { version } = await fetchLatestBaileysVersion()  
     const msgRetry = () => { }  
     const msgRetryCache = new NodeCache()  
     const { state, saveState, saveCreds } = await useMultiFileAuthState(pathvegetaJadiBot)  
-  
+
     const connectionOptions = {  
       logger: pino({ level: "fatal" }),  
       printQRInTerminal: false,  
@@ -161,11 +161,11 @@ export async function vegetaJadiBot(options) {
       version: version,  
       generateHighQualityLinkPreview: true  
     }  
-  
+
     let sock = makeWASocket(connectionOptions)  
     sock.isInit = false  
     let isInit = true  
-  
+
     async function connectionUpdate(update) {  
       const { connection, lastDisconnect, isNewLogin, qr } = update  
       if (isNewLogin) sock.isInit = false  
@@ -205,7 +205,7 @@ export async function vegetaJadiBot(options) {
           global.conns.splice(i, 1)  
         }  
       }  
-  
+
       const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode  
       if (connection === 'close') {  
         if (reason === 428 || reason === 408) {  
@@ -215,8 +215,7 @@ export async function vegetaJadiBot(options) {
         if (reason === 440) {  
           console.log(chalk.bold.magentaBright(`\n╭─────────────────────────\n│ La conexión (+${path.basename(pathvegetaJadiBot)}) fue reemplazada por otra sesión activa.\n╰─────────────────────────`))  
           try {  
-            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathvegetaJadiBot)}@s.whatsapp.net`, { //text: 'HEMOS DETECTADO UNA NUEVA SESIÓN, BORRE LA NUEVA SESIÓN PARA CONTINUAR\n\n> SI HAY ALGÚN PROBLEMA VUELVA A CONECTARSE'  
-}, { quoted: m || null }) : ""  
+            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathvegetaJadiBot)}@s.whatsapp.net`, { }, { quoted: m || null }) : ""  
           } catch (error) {  
             console.error(chalk.bold.yellow(`Error 440 no se pudo enviar mensaje a: +${path.basename(pathvegetaJadiBot)}`))  
           }  
@@ -252,11 +251,21 @@ export async function vegetaJadiBot(options) {
         console.log(chalk.bold.cyanBright(`\n❒────────────【• SUB-BOT •】────────────❒\n│\n│ 🟢 ${userName} (+${path.basename(pathvegetaJadiBot)}) conectado exitosamente.\n│\n❒────────────【• CONECTADO •】────────────❒`))  
         sock.isInit = true  
         global.conns.push(sock)  
-  
-        if (m?.chat) await conn.sendMessage(m.chat, { text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots.`, mentions: [m.sender] }, { quoted: m })  
+
+        if (m?.chat) {  
+          let msg  
+          if (command === 'start') {  
+            msg = `@${m.sender.split('@')[0]}, has encendido y activado tu Sub-Bot con éxito 🚀`  
+          } else {  
+            msg = args[0]  
+              ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...`  
+              : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots.`  
+          }  
+          await conn.sendMessage(m.chat, { text: msg, mentions: [m.sender] }, { quoted: m })  
+        }  
       }  
     }  
-  
+
     setInterval(async () => {  
       if (!sock.user) {  
         try { sock.ws.close() } catch { }  
@@ -267,13 +276,12 @@ export async function vegetaJadiBot(options) {
         global.conns.splice(i, 1)  
       }  
     }, 60000)  
-  
+
     let handler = await import('../handler.js')  
     let creloadHandler = async function (restatConn) {  
       try {  
         const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)  
         if (Object.keys(Handler || {}).length) handler = Handler  
-  
       } catch (e) {  
         console.error('⚠️ Nuevo error: ', e)  
       }  
@@ -289,7 +297,7 @@ export async function vegetaJadiBot(options) {
         sock.ev.off("connection.update", sock.connectionUpdate)  
         sock.ev.off('creds.update', sock.credsUpdate)  
       }  
-  
+
       sock.handler = handler.handler.bind(sock)  
       sock.connectionUpdate = connectionUpdate.bind(sock)  
       sock.credsUpdate = saveCreds.bind(sock, true)  
