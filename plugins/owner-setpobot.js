@@ -49,3 +49,31 @@ let handler = async (m, { conn }) => {
 
 handler.command = /^setppbot$/i
 export default handler
+
+
+/*No olvides agregar a Baileys/Utils/.js
+
+
+const generateProfilePicture = async (mediaUpload) => {
+    let bufferOrFilePath;
+    let img;
+    if (Buffer.isBuffer(mediaUpload)) {
+        bufferOrFilePath = mediaUpload;
+    }
+    else if ('url' in mediaUpload) {
+        bufferOrFilePath = mediaUpload.url.toString();
+    }
+    else {
+        bufferOrFilePath = await (0, exports.toBuffer)(mediaUpload.stream);
+    }
+    const jimp = await jimp_1.default.read(bufferOrFilePath);
+
+    // 🔹 Mantener proporción original (sin recorte)
+    img = jimp
+        .quality(100)
+        .getBufferAsync(jimp_1.default.MIME_JPEG);
+
+    return {
+        img: await img,
+    };
+};
