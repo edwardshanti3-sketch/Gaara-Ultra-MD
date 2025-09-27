@@ -2,6 +2,8 @@ import Jimp from 'jimp'
 
 let handler = async (m, { conn, usedPrefix, command }) => {
   try {
+    await m.react?.('⏳')
+
     const q = m.quoted ? m.quoted : m
     const mime = (q.msg || q).mimetype || ''
     if (!/image/.test(mime)) {
@@ -53,6 +55,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
       }]
     })
 
+    await m.react?.('✅')
     await conn.reply(
       m.chat,
       `✅ Foto de perfil del bot actualizada\n> Proporción detectada: *${formato}*`,
@@ -60,6 +63,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     )
   } catch (e) {
     console.error(e)
+    await m.react?.('❌')
     await conn.reply(
       m.chat,
       `❌ Error al actualizar la foto de perfil:\n\`\`\`${e?.message || e}\`\`\``,
