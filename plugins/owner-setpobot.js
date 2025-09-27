@@ -51,7 +51,7 @@ handler.command = /^setppbot$/i
 export default handler
 
 
-/*No olvides agregar a Baileys/Utils/.js
+/*No olvides agregar a Baileys/lib/Utils/messages-media.js
 
 
 const generateProfilePicture = async (mediaUpload) => {
