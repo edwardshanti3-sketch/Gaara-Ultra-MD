@@ -1,42 +1,73 @@
-import pkg from '@whiskeysockets/baileys'
-const { downloadContentFromMessage, generateProfilePicture } = pkg
+import Jimp from 'jimp'
 
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, usedPrefix, command }) => {
   try {
-    await m.react?.('⏳')
-
-    const targetMsg = m.quoted ? m.quoted : m
-    const imageMessage =
-      targetMsg?.message?.imageMessage ||
-      targetMsg?.msg?.message?.imageMessage ||
-      targetMsg?.message?.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage
-
-    if (!imageMessage) {
-      return m.reply('❌ Responde o envía una *imagen* y usa `.setppbot`.')
+    const q = m.quoted ? m.quoted : m
+    const mime = (q.msg || q).mimetype || ''
+    if (!/image/.test(mime)) {
+      throw `❌ Responde a una *imagen* usando el comando ${usedPrefix + command}`
     }
 
     // 🔹 Descargar la imagen
-    const stream = await downloadContentFromMessage(imageMessage, 'image')
-    let buffer = Buffer.from([])
-    for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk])
+    const imgBuffer = await q.download()
+    if (!imgBuffer) throw '❌ No se pudo descargar la imagen'
 
-    // 🔹 Procesar con generateProfilePicture (lo que espera WhatsApp)
-    const { img } = await generateProfilePicture(buffer)
+    // 🔹 Leer con Jimp
+    const image = await Jimp.read(imgBuffer)
+    const width = image.getWidth()
+    const height = image.getHeight()
 
-    // 🔹 JID del bot
-    const botJid = conn.user?.id || conn.user?.jid || conn.user
+    // 📏 Detectar proporción
+    const aspect = width / height
+    let resized, formato
 
-    // 🔹 Actualizar foto
-    await conn.updateProfilePicture(botJid, img)
+    if (Math.abs(aspect - 1) < 0.1) {
+      // Cuadrada
+      resized = image.cover(640, 640)
+      formato = '1:1 (cuadrado)'
+    } else if (aspect > 1) {
+      // Horizontal
+      resized = image.resize(640, Jimp.AUTO)
+      formato = 'Horizontal'
+    } else {
+      // Vertical
+      resized = image.resize(Jimp.AUTO, 640)
+      formato = 'Vertical'
+    }
 
-    await m.react?.('✅')
-    await m.reply('✅ Foto de perfil del bot actualizada.')
+    // 🔹 Convertir a buffer JPEG
+    const finalBuffer = await resized.getBufferAsync(Jimp.MIME_JPEG)
+
+    // 🔹 Mandar query directa
+    await conn.query({
+      tag: 'iq',
+      attrs: {
+        to: conn.user.id,
+        type: 'set',
+        xmlns: 'w:profile:picture'
+      },
+      content: [{
+        tag: 'picture',
+        attrs: { type: 'image' },
+        content: finalBuffer
+      }]
+    })
+
+    await conn.reply(
+      m.chat,
+      `✅ Foto de perfil del bot actualizada\n> Proporción detectada: *${formato}*`,
+      m
+    )
   } catch (e) {
     console.error(e)
-    await m.react?.('❌')
-    await m.reply('❌ Error al actualizar la foto: ' + (e.message || e))
+    await conn.reply(
+      m.chat,
+      `❌ Error al actualizar la foto de perfil:\n\`\`\`${e?.message || e}\`\`\``,
+      m
+    )
   }
 }
 
 handler.command = /^setppbot$/i
+handler.rowner = true
 export default handler
