@@ -90,7 +90,26 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender  
   let id = `${who.split('@')[0]}`  
   let pathvegetaJadiBot = path.join(`./vegetaJadiBot/`, id)  
-  
+  // 👇 Antes de cambiar command, guarda el original
+let originalCommand = command  
+
+if (command === 'code' || command === 'start') {  
+  command = 'qr'  
+  args.unshift('code')  
+}
+
+// 👇 Bloque final de mensaje corregido
+if (m?.chat) {  
+  let msg  
+  if (originalCommand === 'start') {  
+    msg = `@${m.sender.split('@')[0]}, has encendido y activado tu Sub-Bot con éxito 🚀`  
+  } else {  
+    msg = args[0]  
+      ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...`  
+      : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots.`  
+  }  
+  await conn.sendMessage(m.chat, { text: msg, mentions: [m.sender] }, { quoted: m })  
+}
   if (!fs.existsSync(pathvegetaJadiBot)) {  
     fs.mkdirSync(pathvegetaJadiBot, { recursive: true })  
   }  
@@ -254,15 +273,23 @@ export async function vegetaJadiBot(options) {
 
         if (m?.chat) {  
           let msg  
-          if (command === 'start') {  
-            msg = `@${m.sender.split('@')[0]}, Has encendido y activado tu Sub-Bot con éxito 🚀`  
-          } else {  
-            msg = args[0]  
-              ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...`  
-              : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots.`  
-          }  
-          await conn.sendMessage(m.chat, { text: msg, mentions: [m.sender] }, { quoted: m })  
-        }  
+          if (command === 'code' || command === 'start') {  
+  command = 'qr'  
+  args.unshift('code')  
+}
+
+// 👇 Bloque final de mensaje corregido
+if (m?.chat) {  
+  let msg  
+  if (originalCommand === 'start') {  
+    msg = `@${m.sender.split('@')[0]}, has encendido y activado tu Sub-Bot con éxito 🚀`  
+  } else {  
+    msg = args[0]  
+      ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...`  
+      : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots.`  
+  }  
+  await conn.sendMessage(m.chat, { text: msg, mentions: [m.sender] }, { quoted: m })  
+}  
       }  
     }  
 
