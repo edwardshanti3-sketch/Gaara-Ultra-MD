@@ -1,6 +1,5 @@
-import { generateProfilePicture } from 'baileys/lib/Utils/messages-media.js'
 import pkg from '@whiskeysockets/baileys'
-const { downloadContentFromMessage } = pkg
+const { downloadContentFromMessage, generateProfilePicture } = pkg
 
 let handler = async (m, { conn }) => {
   try {
@@ -16,19 +15,22 @@ let handler = async (m, { conn }) => {
       return m.reply('❌ Responde o envía una *imagen* y usa `.setppbot`.')
     }
 
+    // 🔹 Descargar la imagen
     const stream = await downloadContentFromMessage(imageMessage, 'image')
     let buffer = Buffer.from([])
     for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk])
 
-    // 🔹 Usa la función modificada (sin recorte)
+    // 🔹 Procesar con generateProfilePicture (lo que espera WhatsApp)
     const { img } = await generateProfilePicture(buffer)
 
-    const botJid = (conn.user && (conn.user.id || conn.user.jid || conn.user)) || conn.user
+    // 🔹 JID del bot
+    const botJid = conn.user?.id || conn.user?.jid || conn.user
 
+    // 🔹 Actualizar foto
     await conn.updateProfilePicture(botJid, img)
 
     await m.react?.('✅')
-    await m.reply('✅ Foto de perfil del bot actualizada correctamente.')
+    await m.reply('✅ Foto de perfil del bot actualizada.')
   } catch (e) {
     console.error(e)
     await m.react?.('❌')
