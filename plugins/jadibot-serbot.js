@@ -99,16 +99,14 @@ handler.help = ['qr', 'code', 'start']
 handler.tags = ['serbot']
 handler.command = ['qr', 'code', 'start']
 
-export default handler
-
 export async function vegetaJadiBot(options) {
   let { pathvegetaJadiBot, m, conn, args, usedPrefix, command } = options
-  if (command === 'code' || command === 'start') {
-    command = 'qr'
-    args.unshift('code')
-  }
-
   const isStart = options.command === 'start'
+
+  if (command === 'code' || isStart) {
+    command = 'qr'
+    if (!isStart) args.unshift('code') // 👉 Solo code empuja args
+  }
 
   const mcode = args[0] && /(--code|code)/.test(args[0].trim())
     ? true
@@ -121,12 +119,15 @@ export async function vegetaJadiBot(options) {
     fs.mkdirSync(pathvegetaJadiBot, { recursive: true })
   }
   try {
-    if (args[0] && args[0] != undefined) {
+    // ⚡ Evita validar args cuando es .start
+    if (!isStart && args[0] && args[0] != undefined) {
       fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t'))
     }
   } catch {
-    conn.reply(m.chat, `⚠️ Use correctamente el comando » ${usedPrefix + command}`, m)
-    return
+    if (!isStart) { // 👉 Solo muestra el error si NO es start
+      conn.reply(m.chat, `⚠️ Use correctamente el comando » ${usedPrefix + command}`, m)
+      return
+    }
   }
 
   const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
