@@ -77,3 +77,5 @@ const generateProfilePicture = async (mediaUpload) => {
         img: await img,
     };
 };
+
+En la linea 320 aproximadamente*/
