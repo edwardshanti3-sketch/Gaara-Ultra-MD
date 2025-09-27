@@ -335,5 +335,5 @@ if (m?.chat) {
       return true  
     }  
     creloadHandler(false)  
-  })  
+  }
 }
