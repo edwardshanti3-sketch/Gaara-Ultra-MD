@@ -255,7 +255,7 @@ export async function vegetaJadiBot(options) {
         if (m?.chat) {  
           let msg  
           if (command === 'start') {  
-            msg = `@${m.sender.split('@')[0]}, has encendido y activado tu Sub-Bot con éxito 🚀`  
+            msg = `@${m.sender.split('@')[0]}, Has encendido y activado tu Sub-Bot con éxito 🚀`  
           } else {  
             msg = args[0]  
               ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...`  
