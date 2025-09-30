@@ -140,5 +140,5 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 }
 
 handler.command = /^setppbot$/i
-handler.rowner = true
+//handler.rowner = true
 export default handler
