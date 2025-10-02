@@ -393,17 +393,37 @@ JadiBot({JadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 's
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
 const pluginFilter = (filename) => /\.js$/.test(filename)
 global.plugins = {}
+
+// Función recursiva para obtener todos los .js dentro de carpetas
+function getAllPluginFiles(dir) {
+  let files = []
+  for (const file of readdirSync(dir)) {
+    const fullPath = join(dir, file)
+    if (statSync(fullPath).isDirectory()) {
+      files = files.concat(getAllPluginFiles(fullPath))
+    } else if (pluginFilter(file)) {
+      files.push(fullPath)
+    }
+  }
+  return files
+}
+
 async function filesInit() {
-for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
-try {
-const file = global.__filename(join(pluginFolder, filename))
-const module = await import(file)
-global.plugins[filename] = module.default || module
-} catch (e) {
-conn.logger.error(e)
-delete global.plugins[filename]
-}}}
-filesInit().then((_) => Object.keys(global.plugins)).catch(console.error)
+  const allFiles = getAllPluginFiles(pluginFolder)
+  for (const file of allFiles) {
+    try {
+      const module = await import(global.__filename(file))
+      // Guardar el nombre relativo como antes
+      const name = file.replace(pluginFolder + '/', '')
+      global.plugins[name] = module.default || module
+    } catch (e) {
+      conn.logger.error(e)
+      delete global.plugins[file]
+    }
+  }
+}
+
+filesInit().then(() => Object.keys(global.plugins)).catch(console.error)
 
 global.reload = async (_ev, filename) => {
 if (pluginFilter(filename)) {
