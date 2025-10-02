@@ -44,7 +44,7 @@ let handler = async (m, { conn, command }) => {
     await m.react?.('⏳')
     await reloadPlugins()
     await m.react?.('✅')
-    conn.reply(m.chat, `♻️ *Plugins recargados con éxito* usando *${command}*`, m)
+    conn.reply(m.chat, `♻️ *Plugins recargados con éxito* *${name}*`, m)
   } catch (e) {
     await m.react?.('❌')
     conn.reply(m.chat, `⚠️ Error al recargar plugins:\n${e.message}`, m)
