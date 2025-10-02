@@ -5,9 +5,10 @@ import url from 'url'
 
 let handler = async (m, { conn }) => {
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url))
-  const pluginsDir = path.join(__dirname)
+  const pluginsDir = path.join(__dirname, './') // carpeta plugins
 
   let txt = '🔍 *Revisión de plugins:*\n\n'
+  let foundError = false
 
   for (const file of fs.readdirSync(pluginsDir)) {
     if (!file.endsWith('.js')) continue
@@ -19,14 +20,17 @@ let handler = async (m, { conn }) => {
       txt += `✅ ${file} cargado correctamente\n`
     } catch (err) {
       txt += `❌ ${file} → ${err.message}\n`
+      foundError = true
     }
   }
+
+  if (!foundError) txt += '\n✨ Todos los plugins están bien ✨'
 
   await m.reply(txt)
 }
 
 handler.command = /^err$/i
 handler.help = ['err']
-handler.tags = ['herramienta']
+handler.tags = ['herramientas']
 
-export default handl
+export default handler
