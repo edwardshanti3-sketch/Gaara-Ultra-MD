@@ -10,8 +10,10 @@ function getAllPluginFiles(dir, isRoot = true) {
   for (const file of readdirSync(dir)) {
     const fullPath = join(dir, file)
     if (statSync(fullPath).isDirectory()) {
+      // solo entramos a las subcarpetas
       files = files.concat(getAllPluginFiles(fullPath, false))
     } else if (!isRoot && pluginFilter(file)) {
+      // si estamos en una subcarpeta y es .js, lo agregamos
       files.push(fullPath)
     }
   }
@@ -20,26 +22,20 @@ function getAllPluginFiles(dir, isRoot = true) {
 
 export async function reloadPlugins() {
   global.plugins = global.plugins || {}
-  global._lastPlugins = global._lastPlugins || {}
-
   let recargados = []
-  let allFiles = getAllPluginFiles(pluginFolder, true)
 
+  const allFiles = getAllPluginFiles(pluginFolder, true)
   for (const file of allFiles) {
     try {
-      const name = relative(pluginFolder, file).replace(/\\/g, '/')
       const modulePath = pathToFileURL(file).href + '?update=' + Date.now()
       const module = await import(modulePath)
 
-      let oldModule = global._lastPlugins[name]
+      const name = relative(pluginFolder, file).replace(/\\/g, '/')
       global.plugins[name] = module.default || module
-      global._lastPlugins[name] = module.default || module
 
-      if (!oldModule) {
-        recargados.push(` plugins/${name} | 1 +`)
-      }
+      recargados.push(`✅ ${name}`)
     } catch (e) {
-      // si falla, lo puedes registrar si quieres
+      recargados.push(`❌ Error: ${relative(pluginFolder, file).replace(/\\/g, '/')}`)
     }
   }
 
@@ -48,23 +44,15 @@ export async function reloadPlugins() {
 
 // Handler para .fix2 y .update2
 let handler = async (m, { conn, command }) => {
-  await conn.reply(m.chat, '🔄 ᴀᴄᴛᴜᴀʟɪᴢᴀɴᴅᴏ ʙᴏᴛ ᴜɴ ᴍᴏᴍᴇɴᴛᴏ...', m)
+  await m.react?.('⏳')
+  const lista = await reloadPlugins()
+  await m.react?.('✅')
 
-  const cambios = await reloadPlugins()
-  let msg
-
-  if (cambios.length > 0) {
-    msg = `✅ ᴀᴄᴛᴜᴀʟɪᴢᴀᴄɪᴏɴ ᴄᴏɴ ᴇxɪᴛᴏ ᴇᴄʜᴏ\n\n`
-    msg += `Updating local plugins\nFast-forward\n`
-    msg += cambios.join('\n')
-
-    // Conteo estilo git
-    msg += `\n ${cambios.length} file(s) changed, ${cambios.length} insertion(+)`
-  } else {
-    msg = `Already up to date.`
-  }
-
-  conn.reply(m.chat, msg, m)
+  conn.reply(
+    m.chat,
+    `♻️ *Plugins recargados (${command})*\n\n${lista.join('\n')}`,
+    m
+  )
 }
 
 handler.command = /^fix2|update2$/i
