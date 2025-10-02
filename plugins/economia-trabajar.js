@@ -1,7 +1,7 @@
 var handler = async (m, { conn }) => {
     let user = global.db.data.users[m.sender];
 
-    let cooldown = 3 * 60 * 1000;
+    let cooldown = 3 * 60 * 1000; // 3 minutos
     let time = user.lastwork + cooldown;
 
     if (new Date() - user.lastwork < cooldown) {
@@ -22,12 +22,13 @@ var handler = async (m, { conn }) => {
         "pescador 🎣",
         "cantante 🎤",
         "mecánico 🔧", 
-        "policia 🚔"
+        "policia 🚔",
         "owner 🧑‍💻"
     ];
+
     let trabajo = trabajos[Math.floor(Math.random() * trabajos.length)];
 
-    conn.reply(m.chat, `👷 ¡Has trabajado como *${trabajo}*!\n💸 Ganaste: *${moneda}* monedas\n> ✐ Ahora tienes: *${user.coin}* monedas.`, m);
+    conn.reply(m.chat, `👷 ¡Has trabajado como *${trabajo}*!\n💸 Ganaste: *${monedas}* monedas\n> ✐ Ahora tienes: *${user.coin}* monedas.`, m);
 }
 
 handler.help = ['trabajar'];
