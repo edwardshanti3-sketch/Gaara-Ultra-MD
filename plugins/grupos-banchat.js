@@ -20,6 +20,6 @@ handler.command = ['banchat'];
 
 handler.botuser = true;
 handler.admin = true;
-handler.group = true;
+//handler.group = true;
 
 export default handler;
