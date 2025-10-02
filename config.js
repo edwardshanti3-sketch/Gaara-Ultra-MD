@@ -18,7 +18,7 @@ global.owner = [
 // <-- Número @s.whatsapp.net -->
   ['18493907272', 'Isagi Creador', true],
   ['51956931649'],
-  ['1920437612698@lid'],
+  ['51900373696'],
 
 // <-- Número @lid -->
   ['1920437612698', 'Iaagi', true],
