@@ -10,7 +10,6 @@ function getAllPluginFiles(dir, isRoot = true) {
   for (const file of readdirSync(dir)) {
     const fullPath = join(dir, file)
     if (statSync(fullPath).isDirectory()) {
-      // solo recargar en subcarpetas
       files = files.concat(getAllPluginFiles(fullPath, false))
     } else if (!isRoot && pluginFilter(file)) {
       files.push(fullPath)
@@ -21,25 +20,30 @@ function getAllPluginFiles(dir, isRoot = true) {
 
 export async function reloadPlugins() {
   global.plugins = global.plugins || {}
-  let cambios = []
+  global._lastPlugins = global._lastPlugins || {}
 
-  const allFiles = getAllPluginFiles(pluginFolder, true)
+  let recargados = []
+  let allFiles = getAllPluginFiles(pluginFolder, true)
+
   for (const file of allFiles) {
     try {
+      const name = relative(pluginFolder, file).replace(/\\/g, '/')
       const modulePath = pathToFileURL(file).href + '?update=' + Date.now()
       const module = await import(modulePath)
 
-      const name = relative(pluginFolder, file).replace(/\\/g, '/')
+      let oldModule = global._lastPlugins[name]
       global.plugins[name] = module.default || module
+      global._lastPlugins[name] = module.default || module
 
-      // estilo git → file changed
-      cambios.push(` plugins/${name} | 1 +`)
+      if (!oldModule) {
+        recargados.push(` plugins/${name} | 1 +`)
+      }
     } catch (e) {
-      cambios.push(` plugins/${relative(pluginFolder, file).replace(/\\/g, '/')} | error`)
+      // si falla, lo puedes registrar si quieres
     }
   }
 
-  return cambios
+  return recargados
 }
 
 // Handler para .fix2 y .update2
@@ -47,10 +51,18 @@ let handler = async (m, { conn, command }) => {
   await conn.reply(m.chat, '🔄 ᴀᴄᴛᴜᴀʟɪᴢᴀɴᴅᴏ ʙᴏᴛ ᴜɴ ᴍᴏᴍᴇɴᴛᴏ...', m)
 
   const cambios = await reloadPlugins()
+  let msg
 
-  let msg = `✅ ᴀᴄᴛᴜᴀʟɪᴢᴀᴄɪᴏɴ ᴄᴏɴ ᴇxɪᴛᴏ ᴇᴄʜᴏ\n\n`
-  msg += `Updating local plugins\nFast-forward\n`
-  msg += cambios.join('\n')
+  if (cambios.length > 0) {
+    msg = `✅ ᴀᴄᴛᴜᴀʟɪᴢᴀᴄɪᴏɴ ᴄᴏɴ ᴇxɪᴛᴏ ᴇᴄʜᴏ\n\n`
+    msg += `Updating local plugins\nFast-forward\n`
+    msg += cambios.join('\n')
+
+    // Conteo estilo git
+    msg += `\n ${cambios.length} file(s) changed, ${cambios.length} insertion(+)`
+  } else {
+    msg = `Already up to date.`
+  }
 
   conn.reply(m.chat, msg, m)
 }
