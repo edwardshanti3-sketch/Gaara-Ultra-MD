@@ -42,9 +42,9 @@ global.vs = '2.13.2'
 global.vsJB = '5.0'
 global.nameqr = 'Isagi-bot-MD' 
 global.namebot = 'Isagi-bot-MD'
-global.vegetasessions = 'IsagiSessions'
-global.jadi = 'JadiBots' 
-global.vegetaJadibts = true
+global.vegetasessions = 'Sessions/Principal'
+global.jadi = 'Sessions/Subbots' 
+global.vegetaJadibts = false
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
