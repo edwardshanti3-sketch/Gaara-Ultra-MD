@@ -10,10 +10,9 @@ function getAllPluginFiles(dir, isRoot = true) {
   for (const file of readdirSync(dir)) {
     const fullPath = join(dir, file)
     if (statSync(fullPath).isDirectory()) {
-      // solo entramos a las subcarpetas
+      // solo recargar en subcarpetas
       files = files.concat(getAllPluginFiles(fullPath, false))
     } else if (!isRoot && pluginFilter(file)) {
-      // si estamos en una subcarpeta y es .js, lo agregamos
       files.push(fullPath)
     }
   }
@@ -22,7 +21,7 @@ function getAllPluginFiles(dir, isRoot = true) {
 
 export async function reloadPlugins() {
   global.plugins = global.plugins || {}
-  let recargados = []
+  let cambios = []
 
   const allFiles = getAllPluginFiles(pluginFolder, true)
   for (const file of allFiles) {
@@ -33,26 +32,27 @@ export async function reloadPlugins() {
       const name = relative(pluginFolder, file).replace(/\\/g, '/')
       global.plugins[name] = module.default || module
 
-      recargados.push(`✅ ${name}`)
+      // estilo git → file changed
+      cambios.push(` plugins/${name} | 1 +`)
     } catch (e) {
-      recargados.push(`❌ Error: ${relative(pluginFolder, file).replace(/\\/g, '/')}`)
+      cambios.push(` plugins/${relative(pluginFolder, file).replace(/\\/g, '/')} | error`)
     }
   }
 
-  return recargados
+  return cambios
 }
 
 // Handler para .fix2 y .update2
 let handler = async (m, { conn, command }) => {
-  await m.react?.('⏳')
-  const lista = await reloadPlugins()
-  await m.react?.('✅')
+  await conn.reply(m.chat, '🔄 ᴀᴄᴛᴜᴀʟɪᴢᴀɴᴅᴏ ʙᴏᴛ ᴜɴ ᴍᴏᴍᴇɴᴛᴏ...', m)
 
-  conn.reply(
-    m.chat,
-    `♻️ *Plugins recargados (${command})*\n\n${lista.join('\n')}`,
-    m
-  )
+  const cambios = await reloadPlugins()
+
+  let msg = `✅ ᴀᴄᴛᴜᴀʟɪᴢᴀᴄɪᴏɴ ᴄᴏɴ ᴇxɪᴛᴏ ᴇᴄʜᴏ\n\n`
+  msg += `Updating local plugins\nFast-forward\n`
+  msg += cambios.join('\n')
+
+  conn.reply(m.chat, msg, m)
 }
 
 handler.command = /^fix2|update2$/i
