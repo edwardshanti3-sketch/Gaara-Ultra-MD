@@ -39,7 +39,8 @@ export async function reloadPlugins() {
     }
   }
 
-  return recargados
+  // Si no hubo errores ni recargas nuevas, devolvemos el mensaje único
+  return recargados.length > 0 ? recargados : ['✅ Las sub carpetas están actualizadas']
 }
 
 // Handler para .fix2 y .update2
