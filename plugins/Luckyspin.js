@@ -1,4 +1,4 @@
-// LuckySpin.js
+/*LuckySpin.js
 module.exports = {
     name: "ruleta",
     description: "Gira la ruleta y gana puntos!",
@@ -18,4 +18,4 @@ const outcomes = [
         // Enviar mensaje de resultado
         await client.sendMessage(msg.from, { text: result });
     }
-};
+};*/
