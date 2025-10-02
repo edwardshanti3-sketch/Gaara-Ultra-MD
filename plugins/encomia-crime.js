@@ -1,4 +1,4 @@
-// crime.js
+/*crime.js
 module.exports = {
     name: "crime",
     description: "Comete un crimen y ve si te sales con la tuya.",
@@ -17,5 +17,5 @@ module.exports = {
         // Enviar mensaje de resultado
         await client.sendMessage(msg.from, { text: result });
     }
-};
+};*/
   
