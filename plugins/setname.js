@@ -1,4 +1,4 @@
-module.exports = {
+/*module.exports = {
     name: 'setname',
     description: 'Cambia el nombre del bot en WhatsApp',
     run: async ({ message, sock, args }) => {
@@ -23,4 +23,4 @@ module.exports = {
             }, { quoted: message });
         }
     }
-};
+};*/
