@@ -396,9 +396,9 @@ global.plugins = {}
 
 function getAllPlugins(dir) {
   let files = []
-  for (const file of fs.readdirSync(dir)) {
+  for (const file of readdirSync(dir)) {
     const fullPath = path.join(dir, file)
-    if (fs.statSync(fullPath).isDirectory()) {
+    if (statSync(fullPath).isDirectory()) {
       files = files.concat(getAllPlugins(fullPath))
     } else if (pluginFilter(file)) {
       files.push(fullPath)
