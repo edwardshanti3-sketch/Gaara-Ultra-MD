@@ -5,13 +5,15 @@ import { readdirSync, statSync } from 'fs'
 const pluginFolder = join(process.cwd(), './plugins')
 const pluginFilter = (filename) => /\.js$/.test(filename)
 
-function getAllPluginFiles(dir) {
+function getAllPluginFiles(dir, isRoot = true) {
   let files = []
   for (const file of readdirSync(dir)) {
     const fullPath = join(dir, file)
     if (statSync(fullPath).isDirectory()) {
-      files = files.concat(getAllPluginFiles(fullPath))
-    } else if (pluginFilter(file)) {
+      // solo entramos a las subcarpetas
+      files = files.concat(getAllPluginFiles(fullPath, false))
+    } else if (!isRoot && pluginFilter(file)) {
+      // si estamos en una subcarpeta y es .js, lo agregamos
       files.push(fullPath)
     }
   }
@@ -20,35 +22,37 @@ function getAllPluginFiles(dir) {
 
 export async function reloadPlugins() {
   global.plugins = global.plugins || {}
+  let recargados = []
 
-  const allFiles = getAllPluginFiles(pluginFolder)
+  const allFiles = getAllPluginFiles(pluginFolder, true)
   for (const file of allFiles) {
     try {
-      // Elimina versión cacheada con query param dinámico
       const modulePath = pathToFileURL(file).href + '?update=' + Date.now()
       const module = await import(modulePath)
 
       const name = relative(pluginFolder, file).replace(/\\/g, '/')
       global.plugins[name] = module.default || module
 
-      console.log(`🔄 Plugin recargado: ${name}`)
+      recargados.push(`✅ ${name}`)
     } catch (e) {
-      console.error(`⚠️ Error al recargar ${file}`, e)
+      recargados.push(`❌ Error: ${relative(pluginFolder, file).replace(/\\/g, '/')}`)
     }
   }
+
+  return recargados
 }
 
 // Handler para .fix2 y .update2
 let handler = async (m, { conn, command }) => {
-  try {
-    await m.react?.('⏳')
-    await reloadPlugins()
-    await m.react?.('✅')
-    conn.reply(m.chat, `♻️ *Plugins recargados con éxito* *${name}*`, m)
-  } catch (e) {
-    await m.react?.('❌')
-    conn.reply(m.chat, `⚠️ Error al recargar plugins:\n${e.message}`, m)
-  }
+  await m.react?.('⏳')
+  const lista = await reloadPlugins()
+  await m.react?.('✅')
+
+  conn.reply(
+    m.chat,
+    `♻️ *Plugins recargados (${command})*\n\n${lista.join('\n')}`,
+    m
+  )
 }
 
 handler.command = /^fix2|update2$/i
