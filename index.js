@@ -390,20 +390,38 @@ if (readBotPath.includes(creds)) {
 JadiBot({JadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
 }}}}
 
-const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
+const pluginFolder = global.__dirname(join(__dirname, './plugins')) // sin /index
 const pluginFilter = (filename) => /\.js$/.test(filename)
 global.plugins = {}
+
+function getAllPlugins(dir) {
+  let files = []
+  for (const file of fs.readdirSync(dir)) {
+    const fullPath = path.join(dir, file)
+    if (fs.statSync(fullPath).isDirectory()) {
+      files = files.concat(getAllPlugins(fullPath))
+    } else if (pluginFilter(file)) {
+      files.push(fullPath)
+    }
+  }
+  return files
+}
+
 async function filesInit() {
-for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
-try {
-const file = global.__filename(join(pluginFolder, filename))
-const module = await import(file)
-global.plugins[filename] = module.default || module
-} catch (e) {
-conn.logger.error(e)
-delete global.plugins[filename]
-}}}
-filesInit().then((_) => Object.keys(global.plugins)).catch(console.error)
+  const allPluginFiles = getAllPlugins(pluginFolder)
+  for (const file of allPluginFiles) {
+    try {
+      const module = await import(pathToFileURL(file).href)
+      const name = path.relative(pluginFolder, file).replace(/\\/g, '/')
+      global.plugins[name] = module.default || module
+    } catch (e) {
+      conn.logger.error(e)
+      delete global.plugins[file]
+    }
+  }
+}
+
+filesInit().then(() => Object.keys(global.plugins)).catch(console.error)
 
 global.reload = async (_ev, filename) => {
 if (pluginFilter(filename)) {
