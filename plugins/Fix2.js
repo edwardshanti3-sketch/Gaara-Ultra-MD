@@ -36,7 +36,7 @@ const name = relative(pluginFolder, file).replace(/\\/g, '/')
 
   recargados.push(`✅ ${name}`)  
 } catch (e) {  
-  recargados.push(`❌ Error: ${relative(pluginFolder, file).replace(/\\/g, '/')}`)  
+  recargados.push(`❌ ${relative(pluginFolder, file).replace(/\\/g, '/')} → ${e.message}`)  
 }
 
 }
