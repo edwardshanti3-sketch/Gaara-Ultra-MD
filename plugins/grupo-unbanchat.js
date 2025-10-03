@@ -24,6 +24,7 @@ handler.tags = ['grupo'];
 handler.command = ['unbanchat'];
 
 handler.private = true
+handler.rowner
 //handler.admin = true;
 //handler.botadmin = true;
 //handler.group = true;
