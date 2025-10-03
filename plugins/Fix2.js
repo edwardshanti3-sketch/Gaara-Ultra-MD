@@ -35,8 +35,11 @@ const name = relative(pluginFolder, file).replace(/\\/g, '/')
   global.plugins[name] = module.default || module  
 
   recargados.push(`✅ ${name}`)  
-} catch (e) {  
-  recargados.push(`❌ ${relative(pluginFolder, file).replace(/\\/g, '/')} → ${e.message}`)  
+} catch (e) {
+  const errorMsg = e?.stack || e?.message || String(e)
+  recargados.push(
+    `❌ ${relative(pluginFolder, file).replace(/\\/g, '/')} →\n${errorMsg}`
+  )
 }
 
 }
