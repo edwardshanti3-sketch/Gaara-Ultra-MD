@@ -1,53 +1,69 @@
-import fetch from 'node-fetch'
+import { ytv, yta, ytSearch } from 'api-dylux'
 
 let handler = async (m, { conn, args, command }) => {
-  if (!args[0]) return m.reply(`Usa: .${command} <url>`)
+  if (!args[0]) return m.reply(`Usa: .${command} <nombre o url>`)
 
   try {
-    let url = args[0]
-    let res = await fetch(`https://loader.fo/api/v2/video?url=${encodeURIComponent(url)}`)
-    if (!res.ok) throw new Error('No se pudo obtener info')
-    let json = await res.json()
+    let q = args.join(" ")
+    let videoUrl = ''
+    let title = ''
+    let seconds = ''
+    let author = ''
+    let date = ''
+    let thumb = ''
 
-    if (!json || !json.result) throw new Error('Respuesta inválida')
+    if (q.includes("youtube.com") || q.includes("youtu.be")) {
+      // Directo con URL
+      let info = await ytv(q, '360p') // solo para sacar info, no descarga
+      videoUrl = q
+      title = info.title
+      seconds = info.seconds
+      author = info.author
+      thumb = info.thumb
+    } else {
+      // Búsqueda por nombre
+      let search = await ytSearch(q)
+      if (!search || !search.videos.length) return m.reply('No se encontró nada.')
+      let first = search.videos[0]
+      videoUrl = first.url
+      title = first.title
+      seconds = first.duration
+      author = first.author.name
+      thumb = first.thumbnail
+      date = first.publishedTime
+    }
 
-    let info = json.result
-    let vid = info.video || []
-    let aud = info.audio || []
-
-    // Texto principal
     let msg = `*Youtube - Download*\n\n` +
-      `>> ${info.title}\n\n` +
-      `>> Duración: ${info.duration || '??'}\n` +
-      `>> Autor: ${info.author || '??'}\n` +
-      `>> Publicado: ${info.date || '??'}\n` +
-      `>> Url: ${info.url}`
+      `>> ${title}\n\n` +
+      `>> Duración: ${seconds || '??'}\n` +
+      `>> Autor: ${author || '??'}\n` +
+      `>> Publicado: ${date || '??'}\n` +
+      `>> Url: ${videoUrl}`
 
-    // Opciones para la lista
+    // Definir resoluciones manuales comunes
+    let resolutions = ['144p','240p','360p','480p','720p','1080p']
+    let videoRows = resolutions.map(r => ({
+      title: r,
+      rowId: `.getvideo ${videoUrl} ${r}`
+    }))
+
+    // Definir audios típicos
+    let audios = ['128kbps','160kbps','192kbps','256kbps','320kbps']
+    let audioRows = audios.map(a => ({
+      title: a,
+      rowId: `.getaudio ${videoUrl} ${a}`
+    }))
+
     let sections = [
-      {
-        title: "🎬 Video",
-        rows: vid.map(v => ({
-          title: `${v.quality}p`,
-          rowId: `.get ${v.url}`
-        }))
-      },
-      {
-        title: "🎵 Audio",
-        rows: aud.map(a => ({
-          title: `${a.quality} kbps`,
-          rowId: `.get ${a.url}`
-        }))
-      }
+      { title: "🎬 Video", rows: videoRows },
+      { title: "🎵 Audio", rows: audioRows }
     ]
 
-    // Enviar con miniatura
     await conn.sendMessage(m.chat, {
-      image: { url: info.thumbnail },
+      image: { url: thumb },
       caption: msg
     }, { quoted: m })
 
-    // Lista
     await conn.sendMessage(m.chat, {
       text: 'Elige una opción 👇',
       footer: 'Descargador YouTube',
@@ -56,12 +72,13 @@ let handler = async (m, { conn, args, command }) => {
       sections
     }, { quoted: m })
 
-  } catch (err) {
-    return m.reply('❌ Error: ' + err.message)
+  } catch (e) {
+    console.log(e)
+    m.reply('❌ Error al obtener información.')
   }
 }
 
-handler.help = ['play <url>']
+handler.help = ['play <nombre|url>']
 handler.tags = ['downloader']
 handler.command = /^play$/i
 
