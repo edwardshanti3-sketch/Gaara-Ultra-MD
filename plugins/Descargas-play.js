@@ -1,22 +1,10 @@
-import axios from 'axios'
 import { execFile } from 'child_process'
 import { join } from 'path'
-import fs from 'fs/promises'
+import fs from 'fs'
+import fsp from 'fs/promises'
 
 const TEMP_DIR = './tmp_downloads'
 const pendingDownloads = {}
-
-async function sendMessage(conn, chatId, text) {
-  await conn.sendMessage(chatId, { text })
-}
-
-async function sendListMessage(conn, chatId, title, sections) {
-  await conn.sendMessage(chatId, { text: title + '\n\n' + sections.map(s => s.title + ':\n' + s.rows.map(r => `- ${r.title} (${r.id})`).join('\n')).join('\n\n') })
-}
-
-async function sendFile(conn, chatId, filePath, filename, mimetype = 'video/mp4') {
-  await conn.sendMessage(chatId, { file: filePath, filename, mimetype })
-}
 
 function ytDlpListFormats(youtubeUrl) {
   return new Promise((resolve, reject) => {
@@ -43,14 +31,14 @@ function ytDlpDownload(youtubeUrl, formatId, destPath) {
   })
 }
 
-export async function playHandler(m, { conn, args }) {
-  const chatId = m.chat || m.from || m.key?.remoteJid
-  if (!args || args.length === 0) {
-    return sendMessage(conn, chatId, 'Usa: .play <url_de_youtube>')
-  }
-  const youtubeUrl = args[0].trim()
-  await fs.mkdir(TEMP_DIR, { recursive: true })
-  await sendMessage(conn, chatId, 'Buscando formatos...')
+let handler = async (m, { conn, args, command }) => {
+  const chatId = m.chat
+  if (!args || args.length === 0) return m.reply(`Usa: .${command} <url o nombre>`)
+
+  const youtubeUrl = args[0]
+  await fsp.mkdir(TEMP_DIR, { recursive: true })
+  await m.reply('🔎 Buscando formatos...')
+
   try {
     const ydInfo = await ytDlpListFormats(youtubeUrl)
     const formats = ydInfo.formats || []
@@ -66,58 +54,62 @@ export async function playHandler(m, { conn, args }) {
       } else if (f.acodec && f.vcodec === 'none') {
         if (!byAbr[abr]) byAbr[abr] = []
         byAbr[abr].push(f)
-      } else if (height && f.vcodec && f.acodec === 'none') {
-        if (!byHeight[height]) byHeight[height] = []
-        byHeight[height].push(f)
       }
     }
+
     const videoRows = []
     for (const r of desiredRes) {
       if (byHeight[r]) {
-        const candidate = byHeight[r].sort((a, b) => (a.filesize || 0) - (b.filesize || 0))[0]
-        videoRows.push({ id: `video_${candidate.format_id}`, title: `${r}p` })
+        const candidate = byHeight[r][0]
+        videoRows.push(`📹 ${r}p → video_${candidate.format_id}`)
       }
     }
+
     const audioRows = []
     const abrKeys = Object.keys(byAbr).sort((a, b) => Number(b) - Number(a))
     for (const abr of abrKeys) {
       const candidate = byAbr[abr][0]
-      audioRows.push({ id: `audio_${candidate.format_id}`, title: `${Math.round(abr || (candidate.tbr || 0))} kbps` })
+      audioRows.push(`🎵 ${Math.round(abr)} kbps → audio_${candidate.format_id}`)
     }
-    const sections = []
-    if (videoRows.length) sections.push({ title: 'Video', rows: videoRows })
-    if (audioRows.length) sections.push({ title: 'Audio', rows: audioRows })
-    if (sections.length === 0) {
-      return sendMessage(conn, chatId, 'No se encontraron formatos disponibles.')
-    }
-    const infoMsg = `*Youtube - Download*\n\n>> ${ydInfo.title}\n\n>> Duración: ${ydInfo.duration_string || '??'}\n>> Autor: ${ydInfo.uploader || '??'}\n>> Publicado: ${ydInfo.upload_date ? ydInfo.upload_date.replace(/(\d{4})(\d{2})(\d{2})/, '$3/$2/$1') : '??'}\n>> Url: ${youtubeUrl}`
-    await sendListMessage(conn, chatId, infoMsg, sections)
+
+    if (!videoRows.length && !audioRows.length) return m.reply('No se encontraron formatos.')
+
+    const infoMsg = `*Youtube - Download*\n\n>> ${ydInfo.title}\n\n>> Duración: ${ydInfo.duration_string || '??'}\n>> Autor: ${ydInfo.uploader || '??'}\n>> Publicado: ${ydInfo.upload_date ? ydInfo.upload_date.replace(/(\\d{4})(\\d{2})(\\d{2})/, '$3/$2/$1') : '??'}\n>> Url: ${youtubeUrl}\n\n*Video:*\n${videoRows.join('\n')}\n\n*Audio:*\n${audioRows.join('\n')}\n\nResponde con el ID (ej: video_137 o audio_140)`
+
+    await conn.sendMessage(chatId, { text: infoMsg }, { quoted: m })
     pendingDownloads[chatId] = { youtubeUrl }
-    await sendMessage(conn, chatId, 'Responde con el id del formato (ej: video_137 o audio_140)')
   } catch (err) {
-    return sendMessage(conn, chatId, 'Error al obtener formatos: ' + err.message)
+    return m.reply('❌ Error al obtener formatos: ' + err.message)
   }
 }
 
-export async function formatHandler(m, { conn, args }) {
-  const chatId = m.chat || m.from || m.key?.remoteJid
+handler.help = ['play <url|nombre>']
+handler.tags = ['downloader']
+handler.command = /^play$/i
+export default handler
+
+let select = async (m, { conn, args }) => {
+  const chatId = m.chat
   if (!args || args.length === 0) return
-  const selectionId = args[0].trim()
+  const selectionId = args[0]
   const context = pendingDownloads[chatId]
-  if (!context) return sendMessage(conn, chatId, 'No hay descarga pendiente, usa .play primero.')
+  if (!context) return m.reply('No hay descarga pendiente, usa .play primero.')
   const youtubeUrl = context.youtubeUrl
   const formatId = selectionId.split('_')[1]
-  if (!formatId) return sendMessage(conn, chatId, 'Formato inválido')
+  if (!formatId) return m.reply('Formato inválido')
   try {
     const outName = join(TEMP_DIR, `${Date.now()}_${formatId}.%(ext)s`)
-    await sendMessage(conn, chatId, `Descargando formato ${formatId}...`)
+    await m.reply(`⬇️ Descargando formato ${formatId}...`)
     await ytDlpDownload(youtubeUrl, formatId, outName)
-    const files = await fs.readdir(TEMP_DIR)
+    const files = fs.readdirSync(TEMP_DIR)
     const newest = files.map(f => ({ f, stat: fs.statSync(join(TEMP_DIR, f)) })).sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs)[0]?.f
-    if (!newest) return sendMessage(conn, chatId, 'No se encontró el archivo descargado.')
+    if (!newest) return m.reply('No se encontró el archivo descargado.')
     const filePath = join(TEMP_DIR, newest)
-    await sendFile(conn, chatId, filePath, newest)
+    await conn.sendMessage(chatId, { document: { url: filePath }, fileName: newest, mimetype: 'video/mp4' }, { quoted: m })
   } catch (err) {
-    return sendMessage(conn, chatId, 'Error descargando: ' + err.message)
+    return m.reply('❌ Error descargando: ' + err.message)
   }
 }
+
+select.command = /^video_|^audio_/i
+export { select }
