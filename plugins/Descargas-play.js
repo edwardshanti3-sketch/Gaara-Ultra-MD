@@ -1,3 +1,4 @@
+import fetch from 'node-fetch'
 import { ytSearch, ytv, yta } from 'api-dylux'
 
 let handler = async (m, { conn, args, command }) => {
@@ -57,6 +58,7 @@ let handler = async (m, { conn, args, command }) => {
     }
   }
 
+  // ==== VIDEO ====
   if (command === 'playvideo') {
     let [url, quality] = args
     if (!url) return m.reply('Dame un enlace de YouTube')
@@ -68,10 +70,24 @@ let handler = async (m, { conn, args, command }) => {
         caption: `🎬 ${res.title}\n📥 Calidad: ${quality}`
       }, { quoted: m })
     } catch (e) {
-      m.reply(`❌ Error al descargar video: ${e.message}`)
+      m.reply('⚠️ api-dylux falló, intentando con APIs externas...')
+      try {
+        let api = `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`
+        let r = await fetch(api)
+        let j = await r.json()
+        if (!j.download_url) throw new Error('No hubo respuesta')
+        await conn.sendMessage(m.chat, {
+          video: { url: j.download_url },
+          mimetype: 'video/mp4',
+          caption: `🎬 Descargado con backup\n📥 Calidad: ${quality}`
+        }, { quoted: m })
+      } catch (err) {
+        m.reply(`❌ Error en video: ${err.message}`)
+      }
     }
   }
 
+  // ==== AUDIO ====
   if (command === 'playaudio') {
     let [url, quality] = args
     if (!url) return m.reply('Dame un enlace de YouTube')
@@ -84,7 +100,39 @@ let handler = async (m, { conn, args, command }) => {
         caption: `🎵 ${res.title}\n📥 Calidad: ${quality}`
       }, { quoted: m })
     } catch (e) {
-      m.reply(`❌ Error al descargar audio: ${e.message}`)
+      m.reply('⚠️ api-dylux falló, intentando con APIs externas...')
+      try {
+        const fuentes = [
+          { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+          { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+          { api: 'Vreden', endpoint: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+          { api: 'Delirius', endpoint: `https://api.delirius.my.id/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
+          { api: 'StarVoid', endpoint: `https://api.starvoidclub.xyz/download/youtube?url=${encodeURIComponent(url)}`, extractor: res => res.audio }
+        ]
+        let audioUrl, apiUsada
+        for (let fuente of fuentes) {
+          try {
+            let r = await fetch(fuente.endpoint)
+            if (!r.ok) continue
+            let j = await r.json()
+            let link = fuente.extractor(j)
+            if (link) {
+              audioUrl = link
+              apiUsada = fuente.api
+              break
+            }
+          } catch {}
+        }
+        if (!audioUrl) throw new Error('No funcionó ningún backup')
+        await conn.sendMessage(m.chat, {
+          audio: { url: audioUrl },
+          mimetype: 'audio/mpeg',
+          ptt: false,
+          caption: `🎵 Descargado con backup | API: ${apiUsada}`
+        }, { quoted: m })
+      } catch (err) {
+        m.reply(`❌ Error en audio: ${err.message}`)
+      }
     }
   }
 }
