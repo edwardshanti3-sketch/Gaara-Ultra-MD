@@ -21,7 +21,7 @@ let handler = async (m, { conn }) => {
 
     fs.writeFileSync(inputFile, buffer)
 
-    // 🔊 Convertir audio a formato aceptado por Google (16 kHz mono wav)
+    // Convertir a WAV (16kHz mono)
     await new Promise((resolve, reject) => {
       const ff = spawn('ffmpeg', ['-i', inputFile, '-ar', '16000', '-ac', '1', '-f', 'wav', wavFile])
       ff.on('exit', code => code === 0 ? resolve() : reject(new Error('ffmpeg error')))
@@ -29,33 +29,22 @@ let handler = async (m, { conn }) => {
     fs.unlinkSync(inputFile)
 
     const audioData = fs.readFileSync(wavFile)
-    const base64Audio = audioData.toString('base64')
+    fs.unlinkSync(wavFile)
 
-    // 🧠 Enviar a Google Speech (endpoint usado por Chrome)
-    const res = await fetch('https://speech.googleapis.com/v1/speech:recognize?key=AIzaSyD6f6Qj-CwKjU1k9EIPbAhrHH4qebWzPco', {
+    // 🚀 Enviar al modelo Whisper de HuggingFace (sin API key)
+    const res = await fetch('https://api-inference.huggingface.co/models/openai/whisper-large-v3-turbo', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        config: {
-          encoding: 'LINEAR16',
-          sampleRateHertz: 16000,
-          languageCode: 'es-ES'
-        },
-        audio: { content: base64Audio }
-      })
+      headers: { 'Content-Type': 'audio/wav' },
+      body: audioData
     })
 
     const json = await res.json()
-    fs.unlinkSync(wavFile)
-
-    const text = json?.results?.[0]?.alternatives?.[0]?.transcript
-    if (!text) throw new Error('sin resultado')
+    const text = json.text || '(no se entendió nada)'
 
     await m.react('✅')
     await conn.reply(m.chat, `🗣️ *Texto detectado:* ${text}`, m)
-
-  } catch (e) {
-    console.error(e)
+  } catch (err) {
+    console.error(err)
     m.reply('⚠️ No se pudo convertir el audio a texto.')
   }
 }
