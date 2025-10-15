@@ -45,7 +45,8 @@ console.log(chalk.bold.redBright(`
 `))
 
 console.log(chalk.bold.magentaBright('╭━━━〔 👑 INFO CREADOR 👑 〕━━━⬣'))
-console.log(chalk.bold.cyanBright('┃ ✦ Desarrollado por xzzys26 👑'))
+console.log(chalk.bold.cyanBright(`┃ ✦ Desarrollado por xzzys26 👑
+┃ ✦ Colaborador Principal GianPoolS 👑`))
 console.log(chalk.bold.magentaBright('╰━━━━━━━━━━━━━━━━━━━━━━⬣\n'))
 
 protoType()
@@ -307,7 +308,7 @@ console.log(chalk.bold.cyanBright(`\n •Sin conexión, borra la session princip
 console.log(chalk.bold.magentaBright(`\n《 Reconectando la conexión del Bot...》`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n Conexión perdida con el servidor y VEGETA, reconectando el Bot ...`))
+console.log(chalk.bold.blueBright(`\n Conectando, porfavor espere...\n`))
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionReplaced) {
 console.log(chalk.bold.yellowBright(`\n La conexión del Bot ha sido reemplazada SAIYAJIN.`))
