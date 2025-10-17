@@ -1,3 +1,4 @@
+import { execSync } from 'child_process'
 import speed from 'performance-now'
 import os from 'os'
 
@@ -14,6 +15,24 @@ let handler = async (m, { conn }) => {
     const hostname = os.hostname();
     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
     const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
+// Espacio en disco (NVMe, SSD, HDD)
+let diskInfo = 'No disponible'
+try {
+    if (process.platform === 'win32') {
+        const output = execSync('wmic logicaldisk get size,freespace,caption').toString()
+        const lines = output.trim().split('\n').slice(1)
+        const total = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[2]) || 0), 0)
+        const free = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[1]) || 0), 0)
+        diskInfo = `${(free / 1024 / 1024 / 1024).toFixed(2)} GB libres de ${(total / 1024 / 1024 / 1024).toFixed(2)} GB`
+    } else {
+        const output = execSync('df -k --output=avail,size /').toString().split('\n')
+        const [free, total] = output[1].trim().split(/\s+/).map(Number)
+        diskInfo = `${(free / 1024 / 1024).toFixed(2)} GB libres de ${(total / 1024 / 1024).toFixed(2)} GB`
+    }
+} catch {
+    diskInfo = 'No disponible'
+}
+
     const uptime = formatUptime(os.uptime());
     const cpus = os.cpus();
     const cpuModel = cpus[0].model;
@@ -29,6 +48,7 @@ let handler = async (m, { conn }) => {
 ┃ 🖥️ *Sistema:* ${release}
 ┃ 🌐 *Hostname:* ${hostname}
 ┃ 🔧 *CPU:* ${cpuModel} (${cpuCores} núcleos)
+┃ 💽 *Disco (NVMe/SSD):* ${diskInfo}
 ┃ 🗂️ *RAM:* ${freeMem} GB libres de ${totalMem} GB
 ┃ ⏳ *Uptime Sistema:* ${uptime}
 ┃ 🤖 *Uptime Bot:* ${botUptime}
