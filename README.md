@@ -65,15 +65,11 @@ termux-setup-storage
 ```
 
 ```bash
-pkg update && pkg upgrade
+apt update && apt upgrade -y apt install -y git nodejs ffmpeg imagemagick
 ```
 
 ```bash
-pkg install git nodejs ffmpeg imagemagick -y
-```
-
-```bash
-git clone https://github.com/xzzys26/Gaara-Ultra-MD
+git clone https://github.com/edwardshanti3-sketch/Gaara-Ultra-MD
 ```
 
 ```bash
