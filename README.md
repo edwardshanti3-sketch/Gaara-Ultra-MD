@@ -93,6 +93,10 @@ apt update ; apt upgrade -y apt install -y git nodejs ffmpeg imagemagick ; git c
 > Reconectar 
 
 ```bash
+cd Gaara-Ultra-MD ; git pull ; npm start
+```
+> ✓ Opcional si ya estas en la Carpeta 
+```bash
 git pull ; npm start
 ```
 
