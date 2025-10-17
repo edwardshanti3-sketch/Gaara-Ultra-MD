@@ -15,7 +15,7 @@ let handler = async (m, { conn }) => {
     const hostname = os.hostname();
     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
     const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
-// Espacio en disco (NVMe, SSD, HDD)
+// Espacio de disco NVMe/SSD/HDD
 let diskInfo = 'No disponible'
 try {
     if (process.platform === 'win32') {
@@ -23,11 +23,13 @@ try {
         const lines = output.trim().split('\n').slice(1)
         const total = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[2]) || 0), 0)
         const free = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[1]) || 0), 0)
-        diskInfo = `${(free / 1024 / 1024 / 1024).toFixed(2)} GB libres de ${(total / 1024 / 1024 / 1024).toFixed(2)} GB`
+        const used = total - free
+        diskInfo = `${(free / 1024 / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024 / 1024).toFixed(2)} GB`
     } else {
         const output = execSync('df -k --output=avail,size /').toString().split('\n')
         const [free, total] = output[1].trim().split(/\s+/).map(Number)
-        diskInfo = `${(free / 1024 / 1024).toFixed(2)} GB libres de ${(total / 1024 / 1024).toFixed(2)} GB`
+        const used = total - free
+        diskInfo = `${(free / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024).toFixed(2)} GB`
     }
 } catch {
     diskInfo = 'No disponible'
