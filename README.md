@@ -58,7 +58,7 @@
   <img src="https://github.com/BrayanOFC/Lines-Neon-MB/raw/main/assets/logo-neon.gif" width="300"/>
 </p>
 
-> Nota: Copie y pegue los comandos en termux uno por uno.
+> Instalación por Termux (Normal)
 
 ```bash
 termux-setup-storage
@@ -84,10 +84,16 @@ npm install
 npm start
 ```
 
+> Instalación por Termux (Rápida)
+
+```bash
+apt update ; apt upgrade -y apt install -y git nodejs ffmpeg imagemagick ; git clone https://github.com/edwardshanti3-sketch/Gaara-Ultra-MD ; cd Gaara-Ultra-MD ; npm install ; npm start
+```
+
 > Reconectar 
 
 ```bash
-git pull && npm start
+git pull ; npm start
 ```
 
 > Obtener otro Codigo 
