@@ -84,6 +84,17 @@ npm install
 npm start
 ```
 
+> Reconectar 
+
+```bash
+git pull && npm start
+```
+
+> Obtener otro Codigo 
+
+```bash
+rm -rf Sessions
+```
 
 ### **`CREADOR DEL BOT 🥷🏼⚡️`**
 <div style="display: flex; gap: 10px;">
