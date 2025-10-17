@@ -15,9 +15,9 @@ let handler = async (m, { conn }) => {
     const hostname = os.hostname();
     const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
     const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
-// Espacio de disco NVMe/SSD/HDD
-let diskInfo = 'No disponible'
-try {
+    // Espacio de disco NVMe/SSD/HDD
+    let diskInfo = 'No disponible'
+    try {
     if (process.platform === 'win32') {
         const output = execSync('wmic logicaldisk get size,freespace,caption').toString()
         const lines = output.trim().split('\n').slice(1)
