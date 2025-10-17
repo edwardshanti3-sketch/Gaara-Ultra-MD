@@ -48,8 +48,8 @@ try {
 ┃ 🖥️ *Sistema:* ${release}
 ┃ 🌐 *Hostname:* ${hostname}
 ┃ 🔧 *CPU:* ${cpuModel} (${cpuCores} núcleos)
-┃ 💽 *Disco (NVMe/SSD):* ${diskInfo}
 ┃ 🗂️ *RAM:* ${freeMem} GB libres de ${totalMem} GB
+┃ 💽 *Espacio:* ${diskInfo}
 ┃ ⏳ *Uptime Sistema:* ${uptime}
 ┃ 🤖 *Uptime Bot:* ${botUptime}
 ╰━━━━━━━━━━━━━━━━━━━╯
