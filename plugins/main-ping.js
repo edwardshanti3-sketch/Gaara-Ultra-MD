@@ -13,34 +13,40 @@ let handler = async (m, { conn }) => {
     const platform = os.platform();
     const release = os.release();
     const hostname = os.hostname();
-    const totalMem = (os.totalmem() / 1024 / 1024 / 1024).toFixed(2);
-    const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
+
+    // RAM
+    const totalMemBytes = os.totalmem();
+    const freeMemBytes = os.freemem();
+    const usedMemBytes = totalMemBytes - freeMemBytes;
+
+    const totalMem = (totalMemBytes / 1024 / 1024 / 1024).toFixed(2);
+    const freeMem = (freeMemBytes / 1024 / 1024 / 1024).toFixed(2);
+    const usedMem = (usedMemBytes / 1024 / 1024 / 1024).toFixed(2);
+
     // Espacio de disco NVMe/SSD/HDD
     let diskInfo = 'No disponible'
     try {
-    if (process.platform === 'win32') {
-        const output = execSync('wmic logicaldisk get size,freespace,caption').toString()
-        const lines = output.trim().split('\n').slice(1)
-        const total = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[2]) || 0), 0)
-        const free = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[1]) || 0), 0)
-        const used = total - free
-        diskInfo = `${(free / 1024 / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024 / 1024).toFixed(2)} GB`
-    } else {
-        const output = execSync('df -k --output=avail,size /').toString().split('\n')
-        const [free, total] = output[1].trim().split(/\s+/).map(Number)
-        const used = total - free
-        diskInfo = `${(free / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024).toFixed(2)} GB`
+        if (process.platform === 'win32') {
+            const output = execSync('wmic logicaldisk get size,freespace,caption').toString()
+            const lines = output.trim().split('\n').slice(1)
+            const total = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[2]) || 0), 0)
+            const free = lines.reduce((sum, line) => sum + (parseInt(line.trim().split(/\s+/)[1]) || 0), 0)
+            const used = total - free
+            diskInfo = `${(free / 1024 / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024 / 1024).toFixed(2)} GB`
+        } else {
+            const output = execSync('df -k --output=avail,size /').toString().split('\n')
+            const [free, total] = output[1].trim().split(/\s+/).map(Number)
+            const used = total - free
+            diskInfo = `${(free / 1024 / 1024).toFixed(2)} GB libres, de ${(total / 1024 / 1024).toFixed(2)} GB, Usado ${(used / 1024 / 1024).toFixed(2)} GB`
+        }
+    } catch {
+        diskInfo = 'No disponible'
     }
-} catch {
-    diskInfo = 'No disponible'
-}
 
     const uptime = formatUptime(os.uptime());
     const cpus = os.cpus();
     const cpuModel = cpus[0].model;
     const cpuCores = cpus.length;
-    
-    
     const botUptime = formatUptime(process.uptime());
 
     let result = `
@@ -50,7 +56,7 @@ let handler = async (m, { conn }) => {
 ┃ 🖥️ *Sistema:* ${release}
 ┃ 🌐 *Hostname:* ${hostname}
 ┃ 🔧 *CPU:* ${cpuModel} (${cpuCores} núcleos)
-┃ 🗂️ *RAM:* ${freeMem} GB libres de ${totalMem} GB
+┃ 🗂️ *RAM:* ${freeMem} GB libres, de ${totalMem} GB, Usado ${usedMem} GB
 ┃ 💽 *Espacio:* ${diskInfo}
 ┃ ⏳ *Uptime Sistema:* ${uptime}
 ┃ 🤖 *Uptime Bot:* ${botUptime}
@@ -66,7 +72,6 @@ function formatUptime(seconds) {
     const hours = Math.floor(seconds / (60 * 60));
     seconds %= 60 * 60;
     const minutes = Math.floor(seconds / 60);
-
     return `${days}d ${hours}h ${minutes}m`;
 }
 
