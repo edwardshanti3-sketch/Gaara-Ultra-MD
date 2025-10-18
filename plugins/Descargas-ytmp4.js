@@ -114,7 +114,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const caption = `
-⚡️ *Isagi-Bot-MD DESCARGAS* ⚡️`.trim();
+⚡️ *GAARA-ULTRA-MD DESCARGAS* ⚡️`.trim();
 
     await conn.sendFile(
       m.chat,
