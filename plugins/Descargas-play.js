@@ -1,79 +1,49 @@
 import fetch from 'node-fetch'
 import yts from 'yt-search'
+import { ytmp3 } from 'api-dylux'  // ✅ Usamos api-dylux
 
 let handler = async (m, { conn, text, usedPrefix }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-  const ctxOk = (global.rcanalr || {})
+  const ctxErr = global.rcanalx || {}
+  const ctxWarn = global.rcanalw || {}
+  const ctxOk = global.rcanalr || {}
 
   if (!text) {
     return conn.reply(m.chat, `
-⚡️ Gaara-Ultra-MD - Descargar Multimedia 🎥⚡️
+⚡️ Gaara-Ultra-MD - Descargar Música 🎶
 
-📝 Forma de uso:
+📝 Uso:
 • ${usedPrefix}play <nombre de la canción>
 
 💡 Ejemplos:
 • ${usedPrefix}play unravel Tokyo ghoul
 • ${usedPrefix}play crossing field
 
-🎯 Formato disponible:
+🎧 Salida:
 🎵 Audio MP3 (alta calidad)
-
-🌟 ¡Encuentra y descarga tu música favorita! 🎶
     `.trim(), m, ctxWarn)
   }
 
   try {
-    await conn.reply(m.chat, '⚡️ Buscando audio...', m, ctxOk)
+    await conn.reply(m.chat, '🔍 Buscando música...', m, ctxOk)
 
     const search = await yts(text)
-    if (!search.videos.length) throw new Error('No encontré resultados para tu búsqueda.')
+    if (!search.videos.length) throw new Error('No se encontraron resultados.')
 
     const video = search.videos[0]
-    const { title, url, thumbnail } = video
+    const { title, url, thumbnail, timestamp } = video
+
+    // 🔽 Descarga usando api-dylux
+    const result = await ytmp3(url)
+    const audioUrl = result?.dl_url
+
+    if (!audioUrl) throw new Error('No se pudo obtener el enlace de descarga.')
 
     let thumbBuffer = null
-    if (thumbnail) {
-      try {
-        const resp = await fetch(thumbnail)
-        thumbBuffer = Buffer.from(await resp.arrayBuffer())
-      } catch (err) {
-        console.log('No se pudo obtener la miniatura:', err.message)
-      }
-    }
-
-    // ===== APIs para audio MP3 =====
-    const fuentes = [
-      { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-      { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-      { api: 'Vreden', endpoint: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-      { api: 'Delirius', endpoint: `https://api.delirius.my.id/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-      { api: 'StarVoid', endpoint: `https://api.starvoidclub.xyz/download/youtube?url=${encodeURIComponent(url)}`, extractor: res => res.audio }
-    ]
-
-    let audioUrl, apiUsada, exito = false
-
-    for (let fuente of fuentes) {
-      try {
-        const response = await fetch(fuente.endpoint)
-        if (!response.ok) continue
-        const data = await response.json()
-        const link = fuente.extractor(data)
-        if (link) {
-          audioUrl = link
-          apiUsada = fuente.api
-          exito = true
-          break
-        }
-      } catch (err) {
-        console.log(`⚠️ Error con ${fuente.api}:`, err.message)
-      }
-    }
-
-    if (!exito) {
-      await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } })
-      return conn.reply(m.chat, '🥲 No se pudo enviar el audio desde ninguna API.', m, ctxErr)
+    try {
+      const resp = await fetch(thumbnail)
+      thumbBuffer = Buffer.from(await resp.arrayBuffer())
+    } catch (err) {
+      console.log('⚠️ Miniatura no disponible:', err.message)
     }
 
     await conn.sendMessage(
@@ -81,14 +51,14 @@ let handler = async (m, { conn, text, usedPrefix }) => {
       {
         audio: { url: audioUrl },
         mimetype: 'audio/mpeg',
-        ptt: false,
+        fileName: `${title}.mp3`,
         jpegThumbnail: thumbBuffer,
-        caption: `🎼 ${title} | API: ${apiUsada}`
+        caption: `🎵 *${title}*\n🕒 Duración: ${timestamp}\n📦 Fuente: api-dylux`
       },
       { quoted: m }
     )
 
-    await conn.reply(m.chat, `✅ Descarga completa ⚡️\n🌟 ${title}`, m, ctxOk)
+    await conn.reply(m.chat, `✅ Descarga completa 🎶`, m, ctxOk)
 
   } catch (e) {
     console.error('❌ Error en play:', e)
