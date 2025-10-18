@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import yts from 'yt-search'
-import { ytmp3 } from 'api-dylux'  // ✅ Usamos api-dylux
+import { ytmp3 } from 'api-dylux' // ✅ usa api-dylux directa y estable
 
 let handler = async (m, { conn, text, usedPrefix }) => {
   const ctxErr = global.rcanalx || {}
@@ -15,11 +15,10 @@ let handler = async (m, { conn, text, usedPrefix }) => {
 • ${usedPrefix}play <nombre de la canción>
 
 💡 Ejemplos:
-• ${usedPrefix}play unravel Tokyo ghoul
-• ${usedPrefix}play crossing field
+• ${usedPrefix}play daft punk get lucky
+• ${usedPrefix}play enemy imagine dragons
 
-🎧 Salida:
-🎵 Audio MP3 (alta calidad)
+🎧 Salida: MP3 Alta Calidad
     `.trim(), m, ctxWarn)
   }
 
@@ -30,20 +29,20 @@ let handler = async (m, { conn, text, usedPrefix }) => {
     if (!search.videos.length) throw new Error('No se encontraron resultados.')
 
     const video = search.videos[0]
-    const { title, url, thumbnail, timestamp } = video
+    const { title, url, thumbnail, timestamp, ago, views } = video
 
-    // 🔽 Descarga usando api-dylux
+    // 🔽 Descargar audio usando api-dylux
     const result = await ytmp3(url)
-    const audioUrl = result?.dl_url
+    if (!result || !result.dl_url) throw new Error('No se pudo obtener el enlace de descarga.')
 
-    if (!audioUrl) throw new Error('No se pudo obtener el enlace de descarga.')
+    const audioUrl = result.dl_url
 
-    let thumbBuffer = null
+    let thumbBuffer
     try {
-      const resp = await fetch(thumbnail)
-      thumbBuffer = Buffer.from(await resp.arrayBuffer())
-    } catch (err) {
-      console.log('⚠️ Miniatura no disponible:', err.message)
+      const res = await fetch(thumbnail)
+      thumbBuffer = Buffer.from(await res.arrayBuffer())
+    } catch {
+      thumbBuffer = null
     }
 
     await conn.sendMessage(
@@ -53,20 +52,25 @@ let handler = async (m, { conn, text, usedPrefix }) => {
         mimetype: 'audio/mpeg',
         fileName: `${title}.mp3`,
         jpegThumbnail: thumbBuffer,
-        caption: `🎵 *${title}*\n🕒 Duración: ${timestamp}\n📦 Fuente: api-dylux`
+        caption: `
+🎶 *${title}*
+🕒 Duración: ${timestamp}
+📅 Subido: ${ago}
+👁️ Vistas: ${views}
+📦 Fuente: api-dylux
+        `.trim()
       },
       { quoted: m }
     )
 
-    await conn.reply(m.chat, `✅ Descarga completa 🎶`, m, ctxOk)
-
+    await conn.reply(m.chat, '✅ Descarga completa 🎧', m, ctxOk)
   } catch (e) {
     console.error('❌ Error en play:', e)
     await conn.reply(m.chat, `❌ Error: ${e.message}`, m, ctxErr)
   }
 }
 
-handler.help = ['play <nombre de la canción>']
+handler.help = ['play <nombre>']
 handler.tags = ['downloader']
 handler.command = ['play']
 
