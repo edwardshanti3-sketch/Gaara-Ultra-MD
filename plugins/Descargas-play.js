@@ -126,18 +126,31 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     }, { quoted: m })
 
   await conn.sendMessage(m.chat, { react: { text: '🔎', key: m.key } })
-  await conn.sendMessage(m.chat, { text: `🔍 *Buscando en YouTube...*\n⏳ Por favor espera...` }, { quoted: m })
 
-  try {
-    // Buscar en YouTube
-    const res = await fetch(`https://delirius-apiofc.vercel.app/search/ytsearch?q=${encodeURIComponent(query)}`)
-    const json = await res.json()
-    if (!json.status || !json.data?.length)
-      return conn.sendMessage(m.chat, { text: `❌ No encontré resultados para *${query}*.` }, { quoted: m })
+// Enviar mensaje inicial de búsqueda
+let sentMsg = await conn.sendMessage(
+  m.chat,
+  { text: `🔍 *Buscando en YouTube...*\n⏳ Por favor espera...` },
+  { quoted: m }
+)
 
-    const vid = json.data[0]
-    await conn.sendMessage(m.chat, { react: { text: '🎧', key: m.key } })
-    await conn.sendMessage(m.chat, { text: `🎶 *Descargando:* ${vid.title}` }, { quoted: m })
+try {
+  // Buscar en YouTube
+  const res = await fetch(`https://delirius-apiofc.vercel.app/search/ytsearch?q=${encodeURIComponent(query)}`)
+  const json = await res.json()
+  if (!json.status || !json.data?.length)
+    return conn.sendMessage(m.chat, { text: `❌ No encontré resultados para *${query}*.` }, { quoted: m })
+
+  const vid = json.data[0]
+
+  // Editar mensaje: reemplaza “buscando” por “descargando”
+  await conn.sendMessage(
+    m.chat,
+    { text: `🎶 *Descargando:* ${vid.title}`, edit: sentMsg.key },
+    { quoted: m }
+  )
+
+  await conn.sendMessage(m.chat, { react: { text: '🎧', key: m.key } })
 
     // Ejecutar TODAS las APIs simultáneamente
     const results = await Promise.allSettled(
