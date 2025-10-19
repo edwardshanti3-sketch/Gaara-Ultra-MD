@@ -1,122 +1,212 @@
-import fetch from 'node-fetch'
-import yts from 'yt-search'
+import axios from "axios"
+import fetch from "node-fetch"
+import crypto from "crypto"
+import Jimp from "jimp"
 
-// ====== Límites de peso ======
-const LimitAud = 725 * 1024 * 1024 // 725MB
-const LimitVid = 425 * 1024 * 1024 // 425MB
+// ==================== CONFIG GLOBAL ==================== //
+global.apikey = 'AdonixKeyVip' // cambia esto si tienes una API key para Adonix
 
-// ====== Control de usuarios descargando ======
-const userRequests = new Set()
+// ==================== TODAS LAS APIS ==================== //
+const fuentes = [
+  // 🔹 Adonix
+  { api: 'Adonix', endpoint: url => `https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
+  // 🔹 ZenzzXD
+  { api: 'ZenzzXD', endpoint: url => `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+  { api: 'ZenzzXD v2', endpoint: url => `https://api.zenzxz.my.id/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+  // 🔹 Vreden
+  { api: 'Vreden', endpoint: url => `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.download?.url },
+  // 🔹 Delirius
+  { api: 'Delirius', endpoint: url => `https://api.delirius.my.id/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.download?.url },
+  // 🔹 StarVoid
+  { api: 'StarVoid', endpoint: url => `https://api.starvoidclub.xyz/download/youtube?url=${encodeURIComponent(url)}`, extractor: res => res?.audio },
+  // 🔹 Otras repetidas / variantes (se mantienen como pediste)
+  { api: 'Vreden 2', endpoint: url => `https://api.vreden.web.id/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.download?.url },
+  { api: 'ZenzzXD clone', endpoint: url => `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+  { api: 'Delirius clone', endpoint: url => `https://api.delirius.store/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.download?.url },
+  { api: 'Siputzx', endpoint: url => `https://api.siputzx.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+  { api: 'Yupra', endpoint: url => `https://api.yupra.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.download?.url },
+  { api: 'Xyro', endpoint: url => `https://xyro.site/api/ytdl/audio?url=${encodeURIComponent(url)}`, extractor: res => res?.url },
+  { api: 'Delirius V2', endpoint: url => `https://api.delirius.my.id/download/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.download?.url },
+  { api: 'StarVoid v2', endpoint: url => `https://api.starvoidclub.xyz/download/youtube?url=${encodeURIComponent(url)}`, extractor: res => res?.audio }
+]
 
-// ====== Función para obtener el tamaño de un archivo remoto ======
-async function getFileSize(url) {
-  try {
-    const response = await fetch(url, { method: 'HEAD' })
-    return parseInt(response.headers.get('content-length') || 0)
-  } catch {
-    return 0
+// ==================== SAVE TUBE (BACKUP FINAL) ==================== //
+const savetube = {
+  api: {
+    base: "https://media.savetube.me/api",
+    cdn: "/random-cdn",
+    info: "/v2/info",
+    download: "/download"
+  },
+  headers: {
+    'accept': '*/*',
+    'content-type': 'application/json',
+    'origin': 'https://yt.savetube.me',
+    'referer': 'https://yt.savetube.me/',
+    'user-agent': 'MiyukiBot/1.0.0'
+  },
+  crypto: {
+    hexToBuffer: hex => Buffer.from(hex.match(/.{1,2}/g).join(''), 'hex'),
+    decrypt: async enc => {
+      const secretKey = 'C5D58EF67A7584E4A29F6C35BBC4EB12'
+      const data = Buffer.from(enc, 'base64')
+      const iv = data.slice(0, 16)
+      const content = data.slice(16)
+      const key = savetube.crypto.hexToBuffer(secretKey)
+      const decipher = crypto.createDecipheriv('aes-128-cbc', key, iv)
+      let decrypted = decipher.update(content)
+      decrypted = Buffer.concat([decrypted, decipher.final()])
+      return JSON.parse(decrypted.toString())
+    }
+  },
+  youtubeId: url => {
+    const r = [
+      /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+      /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+    ]
+    for (let regex of r) if (regex.test(url)) return url.match(regex)[1]
+    return null
+  },
+  request: async (endpoint, data = {}, method = 'post') => {
+    try {
+      const { data: res } = await axios({
+        method,
+        url: `${endpoint.startsWith('http') ? '' : savetube.api.base}${endpoint}`,
+        data: method === 'post' ? data : undefined,
+        params: method === 'get' ? data : undefined,
+        headers: savetube.headers
+      })
+      return { ok: true, data: res }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
+  },
+  getCDN: async () => {
+    const res = await savetube.request(savetube.api.cdn, {}, 'get')
+    if (!res.ok) return res
+    return { ok: true, cdn: res.data.cdn }
+  },
+  download: async (url) => {
+    try {
+      const id = savetube.youtubeId(url)
+      if (!id) throw new Error('No ID de YouTube válido')
+
+      const cdnRes = await savetube.getCDN()
+      if (!cdnRes.ok) throw new Error('CDN falló')
+
+      const infoRes = await savetube.request(`https://${cdnRes.cdn}${savetube.api.info}`, { url })
+      const decrypted = await savetube.crypto.decrypt(infoRes.data.data)
+
+      const dl = await savetube.request(`https://${cdnRes.cdn}${savetube.api.download}`, {
+        id,
+        downloadType: 'audio',
+        quality: '128',
+        key: decrypted.key
+      })
+
+      return {
+        ok: true,
+        url: dl.data.data.downloadUrl,
+        title: decrypted.title,
+        thumbnail: decrypted.thumbnail
+      }
+    } catch (e) {
+      return { ok: false, error: e.message }
+    }
   }
 }
 
-// ====== Conversión de segundos a formato legible ======
-function secondString(seconds) {
-  seconds = Number(seconds)
-  const d = Math.floor(seconds / (3600 * 24))
-  const h = Math.floor((seconds % (3600 * 24)) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  const s = Math.floor(seconds % 60)
-  const parts = []
-  if (d > 0) parts.push(d + (d === 1 ? ' día' : ' días'))
-  if (h > 0) parts.push(h + (h === 1 ? ' hora' : ' horas'))
-  if (m > 0) parts.push(m + (m === 1 ? ' minuto' : ' minutos'))
-  if (s > 0) parts.push(s + (s === 1 ? ' segundo' : ' segundos'))
-  return parts.join(', ')
-}
+// ==================== HANDLER PRINCIPAL ==================== //
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+  const query = args.join(" ").trim()
+  if (!query)
+    return conn.sendMessage(m.chat, {
+      text: `🎵 *Ingresa el nombre del audio o canción que deseas descargar.*`
+    }, { quoted: m })
 
-// ====== Handler principal ======
-let handler = async (m, { conn, text, usedPrefix }) => {
-  const ctxErr = (global.rcanalx || {})
-  const ctxWarn = (global.rcanalw || {})
-  const ctxOk = (global.rcanalr || {})
+  await conn.sendMessage(m.chat, { react: { text: '🔎', key: m.key } })
+  await conn.sendMessage(m.chat, { text: `🔍 *Buscando en YouTube...*\n⏳ Por favor espera...` }, { quoted: m })
 
-  if (!text) {
-    return conn.reply(m.chat, `
-⚡️ Gaara-Ultra-MD - Descargar Multimedia 🎵⚡️
-
-📝 Forma de uso:
-• ${usedPrefix}play <nombre de la canción>
-
-💡 Ejemplo:
-• ${usedPrefix}play Morat Besos en guerra
-
-🎯 Formato disponible:
-🎵 Audio MP3 (alta calidad)
-
-🌟 ¡Encuentra y descarga tu música favorita! 🎶
-    `.trim(), m, ctxWarn)
-  }
-
-  if (userRequests.has(m.sender)) {
-    return conn.reply(m.chat, '⏳ Ya tienes una descarga en curso, espera que termine.', m, ctxWarn)
-  }
-
-  userRequests.add(m.sender)
   try {
-    await conn.sendMessage(m.chat, { react: { text: '🔍', key: m.key } })
+    // Buscar en YouTube
+    const res = await fetch(`https://delirius-apiofc.vercel.app/search/ytsearch?q=${encodeURIComponent(query)}`)
+    const json = await res.json()
+    if (!json.status || !json.data?.length)
+      return conn.sendMessage(m.chat, { text: `❌ No encontré resultados para *${query}*.` }, { quoted: m })
 
-    const search = await yts(text)
-    if (!search.videos.length) throw new Error('No encontré resultados para tu búsqueda.')
+    const vid = json.data[0]
+    await conn.sendMessage(m.chat, { react: { text: '🎧', key: m.key } })
+    await conn.sendMessage(m.chat, { text: `🎶 *Descargando:* ${vid.title}` }, { quoted: m })
 
-    const video = search.videos[0]
-    const { title, url, duration, thumbnail } = video
+    // Ejecutar TODAS las APIs simultáneamente
+    const results = await Promise.allSettled(
+      fuentes.map(async f => {
+        try {
+          const r = await fetch(f.endpoint(vid.url))
+          const data = await r.json()
+          const link = f.extractor(data)
+          if (link) return link
+        } catch { }
+        return null
+      })
+    )
 
-    await conn.reply(m.chat, `🎧 *${title}*\n\n⏰ *Duración:* ${secondString(duration.seconds)}\n\n⌛ Descargando, espera un momento...`, m, ctxOk)
+    // Elegir el primer link válido
+    let dlUrl = results.find(r => r.status === 'fulfilled' && r.value)?.value
 
-    // ====== API Adonix (única que funciona) ======
-    const endpoint = `https://apiadonix.kozow.com/download/ytmp3?apikey=AdonixKeyVip&url=${encodeURIComponent(url)}`
-
-    const response = await fetch(endpoint)
-    if (!response.ok) throw new Error('Error al contactar con Adonix API.')
-
-    const data = await response.json()
-    const audioUrl = data?.data?.url
-    if (!audioUrl) throw new Error('No se encontró el enlace de descarga en la respuesta.')
-
-    const fileSize = await getFileSize(audioUrl)
-    const limit = LimitAud
-
-    // ====== Envío según tamaño ======
-    if (fileSize > limit) {
-      await conn.sendMessage(m.chat, {
-        document: { url: audioUrl },
-        mimetype: 'audio/mpeg',
-        fileName: `${title}.mp3`,
-        caption: `✅ *Descarga como documento*\n🎵 *Título:* ${title}`
-      }, { quoted: m })
-    } else {
-      await conn.sendMessage(m.chat, {
-        audio: { url: audioUrl },
-        mimetype: 'audio/mpeg',
-        ptt: false,
-        jpegThumbnail: thumbnail ? await (await fetch(thumbnail)).arrayBuffer() : null,
-        caption: `🎼 ${title} | API: Adonix`
-      }, { quoted: m })
+    // Si ninguna funcionó, usar SaveTube
+    if (!dlUrl) {
+      const st = await savetube.download(vid.url)
+      if (st.ok) dlUrl = st.url
     }
 
+    if (!dlUrl)
+      return conn.sendMessage(m.chat, { text: `⚠️ *No se pudo obtener el audio, todas las APIs fallaron.*` }, { quoted: m })
+
+    // Miniatura
+    let thumb = null
+    try {
+      const img = await Jimp.read(vid.thumbnail)
+      img.resize(300, Jimp.AUTO)
+      thumb = await img.getBufferAsync(Jimp.MIME_JPEG)
+    } catch { }
+
+    // Enviar audio
+    await conn.sendMessage(m.chat, {
+      audio: { url: dlUrl },
+      mimetype: 'audio/mpeg',
+      fileName: `${vid.title}.mp3`,
+      caption: `
+🎶 *${vid.title}*
+🕒 Duración: ${vid.duration}
+🎤 Canal: ${vid.author?.name || "Desconocido"}
+🔗 Link: ${vid.url}
+`.trim(),
+      ...(thumb ? { jpegThumbnail: thumb } : {}),
+      contextInfo: {
+        externalAdReply: {
+          title: vid.title,
+          body: "test bot",
+          mediaUrl: vid.url,
+          sourceUrl: vid.url,
+          thumbnailUrl: vid.thumbnail,
+          mediaType: 1,
+          renderLargerThumbnail: true
+        }
+      }
+    }, { quoted: m })
+
     await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
-    await conn.reply(m.chat, `✅ Descarga completa ⚡️\n🌟 ${title}`, m, ctxOk)
 
   } catch (e) {
-    console.error('❌ Error en play:', e)
+    console.error(e)
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-    await conn.reply(m.chat, `❌ Error: ${e.message}`, m, ctxErr)
-  } finally {
-    userRequests.delete(m.sender)
+    conn.sendMessage(m.chat, { text: `⚠️ Error: ${e.message}` }, { quoted: m })
   }
 }
 
-handler.help = ['play <nombre de la canción>']
-handler.tags = ['downloader']
-handler.command = ['play']
-
+handler.help = ['play']
+handler.tags = ['descargas']
+handler.command = /^play$/i
 export default handler
