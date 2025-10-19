@@ -210,6 +210,14 @@ try {
       }
     }, { quoted: m })
 
+// Actualizamos el mensaje a “Descargado con éxito”
+
+await conn.sendMessage(
+  m.chat,
+  { text: `✅ *Descargado con éxito:* ${vid.title}`, edit: sentMsg.key },
+  { quoted: m }
+)
+
     await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
   } catch (e) {
