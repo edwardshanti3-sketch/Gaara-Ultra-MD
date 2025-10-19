@@ -187,7 +187,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       contextInfo: {
         externalAdReply: {
           title: vid.title,
-          body: "test bot",
+          body: "",
           mediaUrl: vid.url,
           sourceUrl: vid.url,
           thumbnailUrl: vid.thumbnail,
